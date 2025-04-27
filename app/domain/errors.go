@@ -1,0 +1,17 @@
+package domain
+
+import "errors"
+
+var (
+	ErrTransactionNotAllowed          = errors.New("transaction not allowed")
+	ErrTransactionInvalidAmount       = errors.New("transaction invalid amount")
+	ErrNotEnoughMoney                 = errors.New("not enough money")
+	ErrTransactionInvalidSender       = errors.New("transaction invalid sender")
+	ErrSenderNotFound                 = errors.New("sender not found")
+	ErrReceiverNotFound               = errors.New("receiver not found")
+	ErrEitherDocumentMustBeProvided   = errors.New("either document must be provided")
+	ErrCNPJMustBeProvidedForMerchant  = errors.New("cnpj must be provided for merchant user type")
+	ErrCPFMustBeProvidedForCommonUser = errors.New("cpf must be provided for common user type")
+	ErrMerchantCannotHaveCPF          = errors.New("merchant user type cannot have cpf")
+	ErrCommonCannotHaveCNPJ           = errors.New("common user type cannot have cnpj")
+)
