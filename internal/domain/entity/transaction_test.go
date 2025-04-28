@@ -1,9 +1,9 @@
-package domain_test
+package entity_test
 
 import (
 	"testing"
 
-	"github.com.br/gibranct/simplified-wallet/app/domain"
+	domain "github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com/stretchr/testify/assert"
 )
 

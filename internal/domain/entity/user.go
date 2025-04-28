@@ -1,9 +1,10 @@
-package domain
+package entity
 
 import (
 	"time"
 
-	"github.com.br/gibranct/simplified-wallet/app/domain/vo"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
 	"github.com/google/uuid"
 )
 
@@ -81,19 +82,19 @@ func NewUser(name, email, password, cpf, cnpj string, userType string) (*User, e
 	}
 
 	if userTypeEnum.IsMerchant() && cnpj == "" {
-		return nil, ErrCNPJMustBeProvidedForMerchant
+		return nil, errs.ErrCNPJMustBeProvidedForMerchant
 	}
 
 	if userTypeEnum.IsMerchant() && cpf != "" {
-		return nil, ErrMerchantCannotHaveCPF
+		return nil, errs.ErrMerchantCannotHaveCPF
 	}
 
 	if userTypeEnum.IsCommon() && cpf == "" {
-		return nil, ErrCPFMustBeProvidedForCommonUser
+		return nil, errs.ErrCPFMustBeProvidedForCommonUser
 	}
 
 	if userTypeEnum.IsCommon() && cnpj != "" {
-		return nil, ErrCommonCannotHaveCNPJ
+		return nil, errs.ErrCommonCannotHaveCNPJ
 	}
 
 	cpfObj, err := vo.NewCPF(cpf)

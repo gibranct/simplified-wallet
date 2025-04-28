@@ -3,7 +3,7 @@ package vo_test
 import (
 	"testing"
 
-	"github.com.br/gibranct/simplified-wallet/app/domain/vo"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
 	"github.com/stretchr/testify/assert"
 )
 

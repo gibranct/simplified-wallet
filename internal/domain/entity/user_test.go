@@ -1,9 +1,10 @@
-package domain_test
+package entity_test
 
 import (
 	"testing"
 
-	"github.com.br/gibranct/simplified-wallet/app/domain"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,7 @@ func TestNewUser_ShouldSuccessfullyCreateCommonUserWithValidInputParameters(t *t
 	userType := "common"
 
 	// Act
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 
 	// Assert
 	assert.NoError(t, err)
@@ -44,7 +45,7 @@ func TestNewUser_ShouldSuccessfullyCreateMerchantUserWithValidInputParameters(t 
 	userType := "merchant"
 
 	// Act
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 
 	// Assert
 	assert.NoError(t, err)
@@ -71,7 +72,7 @@ func TestNewUser_ShouldReturnErrorWhenInvalidUserTypeIsProvided(t *testing.T) {
 	invalidUserType := "invalid_type" // An invalid user type
 
 	// Act
-	_, err := domain.NewUser(name, email, password, cpf, cnpj, invalidUserType)
+	_, err := entity.NewUser(name, email, password, cpf, cnpj, invalidUserType)
 
 	// Assert
 	assert.Error(t, err)
@@ -89,25 +90,25 @@ func TestNewUser_ShouldReturnErrorWhenWrongOrTooMuchDocumentIsProvided(t *testin
 		userType      string
 	}{
 		{
-			expectedError: domain.ErrCPFMustBeProvidedForCommonUser,
+			expectedError: errs.ErrCPFMustBeProvidedForCommonUser,
 			cpf:           "",
 			cnpj:          "12345678000190",
 			userType:      "common",
 		},
 		{
-			expectedError: domain.ErrCNPJMustBeProvidedForMerchant,
+			expectedError: errs.ErrCNPJMustBeProvidedForMerchant,
 			cpf:           "12345678909",
 			cnpj:          "",
 			userType:      "merchant",
 		},
 		{
-			expectedError: domain.ErrMerchantCannotHaveCPF,
+			expectedError: errs.ErrMerchantCannotHaveCPF,
 			cpf:           "12345678909",
 			cnpj:          "12345678000190",
 			userType:      "merchant",
 		},
 		{
-			expectedError: domain.ErrCommonCannotHaveCNPJ,
+			expectedError: errs.ErrCommonCannotHaveCNPJ,
 			cpf:           "12345678909",
 			cnpj:          "12345678000190",
 			userType:      "common",
@@ -116,7 +117,7 @@ func TestNewUser_ShouldReturnErrorWhenWrongOrTooMuchDocumentIsProvided(t *testin
 
 	// Act & Assert
 	for _, testCase := range testCases {
-		_, err := domain.NewUser(name, email, password, testCase.cpf, testCase.cnpj, testCase.userType)
+		_, err := entity.NewUser(name, email, password, testCase.cpf, testCase.cnpj, testCase.userType)
 		assert.Error(t, err)
 		assert.Equal(t, testCase.expectedError, err)
 	}
@@ -133,7 +134,7 @@ func TestUser_Deposit_ShouldCorrectlyUpdateBalanceWithPositiveAmount(t *testing.
 	initialBalance := 0.0
 	depositAmount := 100.0
 
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
 	assert.Equal(t, initialBalance, user.Balance())
 
@@ -155,7 +156,7 @@ func TestUser_Deposit_ShouldNotChangeBalanceWithZeroAmount(t *testing.T) {
 	initialBalance := 0.0
 	depositAmount := 0.0
 
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
 	assert.Equal(t, initialBalance, user.Balance())
 
@@ -177,7 +178,7 @@ func TestUser_Deposit_ShouldNotChangeBalanceWithNegativeAmount(t *testing.T) {
 	initialBalance := 0.0
 	depositAmount := -50.0
 
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
 	assert.Equal(t, initialBalance, user.Balance())
 
@@ -198,7 +199,7 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountIsPositiveAndLessThan
 	userType := "common"
 	initialBalance := 100.0
 
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
 
 	// Set initial balance with deposit
@@ -225,7 +226,7 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountEqualsEntireBalance(t
 	userType := "common"
 	initialBalance := 100.0
 
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
 
 	// Set initial balance with deposit
@@ -252,7 +253,7 @@ func TestUser_Withdraw_ShouldReturnFalseWhenTryingToWithdrawMoreThanAvailableBal
 	userType := "common"
 	initialBalance := 50.0
 
-	user, err := domain.NewUser(name, email, password, cpf, cnpj, userType)
+	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
 
 	// Set initial balance with deposit
