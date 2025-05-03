@@ -209,10 +209,10 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountIsPositiveAndLessThan
 	withdrawAmount := 50.0
 
 	// Act
-	result := user.Withdraw(withdrawAmount)
+	err = user.Withdraw(withdrawAmount)
 
 	// Assert
-	assert.True(t, result)
+	assert.NoError(t, err)
 	assert.Equal(t, initialBalance-withdrawAmount, user.Balance())
 }
 
@@ -236,10 +236,10 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountEqualsEntireBalance(t
 	withdrawAmount := 100.0 // Withdrawing the entire balance
 
 	// Act
-	result := user.Withdraw(withdrawAmount)
+	err = user.Withdraw(withdrawAmount)
 
 	// Assert
-	assert.True(t, result)
+	assert.NoError(t, err)
 	assert.Equal(t, 0.0, user.Balance())
 }
 
@@ -263,9 +263,9 @@ func TestUser_Withdraw_ShouldReturnFalseWhenTryingToWithdrawMoreThanAvailableBal
 	withdrawAmount := 100.0 // Attempting to withdraw more than available
 
 	// Act
-	result := user.Withdraw(withdrawAmount)
+	err = user.Withdraw(withdrawAmount)
 
 	// Assert
-	assert.False(t, result)
+	assert.NotNil(t, err)
 	assert.Equal(t, initialBalance, user.Balance()) // Balance should remain unchanged
 }

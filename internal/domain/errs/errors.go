@@ -14,4 +14,6 @@ var (
 	ErrCPFMustBeProvidedForCommonUser = errors.New("cpf must be provided for common user type")
 	ErrMerchantCannotHaveCPF          = errors.New("merchant user type cannot have cpf")
 	ErrCommonCannotHaveCNPJ           = errors.New("common user type cannot have cnpj")
+	ErrZeroOrNegativeAmount           = errors.New("amount must be a positive number")
+	ErrInsufficientBalance            = errors.New("insufficient balance")
 )

@@ -13,7 +13,7 @@ type User struct {
 	name      string
 	email     *vo.Email
 	password  *vo.Password
-	balance   float64
+	balance   *vo.Money
 	cpf       *vo.CPF
 	cnpj      *vo.CNPJ
 	userType  *vo.UserType
@@ -39,7 +39,7 @@ func (u *User) Password() string {
 }
 
 func (u *User) Balance() float64 {
-	return u.balance
+	return float64(u.balance.Value() / 100)
 }
 
 func (u *User) CPF() string {
@@ -116,12 +116,17 @@ func NewUser(name, email, password, cpf, cnpj string, userType string) (*User, e
 		return nil, err
 	}
 
+	money, err := vo.NewMoney(0.0)
+	if err != nil {
+		return nil, err
+	}
+
 	user := User{
 		id:        id,
 		name:      name,
 		email:     emailObj,
 		password:  passwordObj,
-		balance:   0.0,
+		balance:   money,
 		cpf:       cpfObj,
 		cnpj:      cnpjObj,
 		userType:  userTypeEnum,
@@ -134,17 +139,21 @@ func NewUser(name, email, password, cpf, cnpj string, userType string) (*User, e
 }
 
 // Deposit adds money to the user's balance
-func (u *User) Deposit(amount float64) {
-	if amount > 0 {
-		u.balance += amount
+func (u *User) Deposit(amount float64) error {
+	m, err := u.balance.Add(amount)
+	if err != nil {
+		return err
 	}
+	u.balance = m
+	return nil
 }
 
 // Withdraw removes money from the user's balance
-func (u *User) Withdraw(amount float64) bool {
-	if amount > 0 && amount <= u.balance {
-		u.balance -= amount
-		return true
+func (u *User) Withdraw(amount float64) error {
+	m, err := u.balance.Subtract(amount)
+	if err != nil {
+		return err
 	}
-	return false
+	u.balance = m
+	return nil
 }
