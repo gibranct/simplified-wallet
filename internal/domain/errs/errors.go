@@ -16,4 +16,5 @@ var (
 	ErrCommonCannotHaveCNPJ           = errors.New("common user type cannot have cnpj")
 	ErrZeroOrNegativeAmount           = errors.New("amount must be a positive number")
 	ErrInsufficientBalance            = errors.New("insufficient balance")
+	ErrMerchantCannotSendMoney        = errors.New("merchant user type cannot send money")
 )

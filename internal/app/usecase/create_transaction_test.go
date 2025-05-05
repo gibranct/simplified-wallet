@@ -8,6 +8,8 @@ import (
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
+	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -56,9 +58,9 @@ func TestCreateTransaction_Execute_ShouldSuccessfullyUpdateBalanceAndCreateTrans
 	expectedTransactionID := "transaction-id"
 
 	// Mock users
-	sender := NewUser()
+	sender := NewUser(vo.CommonUserType)
 	sender.Deposit(amount * 2)
-	receiver := NewUser()
+	receiver := NewUser(vo.CommonUserType)
 
 	// Configure mocks
 	mockAuthorizer.On("IsTransactionAllowed", ctx).Return(true)
@@ -92,6 +94,51 @@ func TestCreateTransaction_Execute_ShouldSuccessfullyUpdateBalanceAndCreateTrans
 	mockUserRepo.AssertCalled(t, "UpdateBalance", ctx, senderID.String(), receiverID.String(), mock.AnythingOfType("func(*entity.User, *entity.User) (*entity.Transaction, error)"))
 }
 
+func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderIsAMerchant(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	mockUserRepo := &mockUserRepository{}
+	mockAuthorizer := &mockTransactionAuthorizerGateway{}
+
+	senderID := uuid.New()
+	receiverID := uuid.New()
+	amount := 100.0
+
+	// Mock users with insufficient balance
+	sender := NewUser(vo.MerchantUserType)
+	// Note: Not depositing enough money (only 50)
+	sender.Deposit(50.0)
+	receiver := NewUser(vo.CommonUserType)
+
+	// Configure mocks
+	mockAuthorizer.On("IsTransactionAllowed", ctx).Return(true)
+	mockUserRepo.On("UpdateBalance", ctx, senderID.String(), receiverID.String(), mock.AnythingOfType("func(*entity.User, *entity.User) (*entity.Transaction, error)")).
+		Run(func(args mock.Arguments) {
+			// Execute the callback function to simulate the balance update
+			updateFn := args.Get(3).(func(*entity.User, *entity.User) (*entity.Transaction, error))
+			// This will fail due to insufficient funds
+			_, err := updateFn(sender, receiver)
+			assert.ErrorIs(t, err, errs.ErrMerchantCannotSendMoney)
+		}).
+		Return(nil)
+
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer)
+
+	input := usecase.CreateTransactionInput{
+		Amount:     amount,
+		SenderID:   senderID,
+		ReceiverID: receiverID,
+	}
+
+	// Act
+	result, _ := useCase.Execute(ctx, input)
+
+	// Assert
+	assert.Equal(t, "", result)
+	mockAuthorizer.AssertCalled(t, "IsTransactionAllowed", ctx)
+	mockUserRepo.AssertCalled(t, "UpdateBalance", ctx, senderID.String(), receiverID.String(), mock.AnythingOfType("func(*entity.User, *entity.User) (*entity.Transaction, error)"))
+}
+
 func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderHasInsufficientFunds(t *testing.T) {
 	// Arrange
 	ctx := context.Background()
@@ -103,10 +150,10 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderHasInsufficientFun
 	amount := 100.0
 
 	// Mock users with insufficient balance
-	sender := NewUser()
+	sender := NewUser(vo.CommonUserType)
 	// Note: Not depositing enough money (only 50)
 	sender.Deposit(50.0)
-	receiver := NewUser()
+	receiver := NewUser(vo.CommonUserType)
 
 	// Configure mocks
 	mockAuthorizer.On("IsTransactionAllowed", ctx).Return(true)
@@ -148,9 +195,9 @@ func TestCreateTransaction_Execute_ShouldCreateTransactionWithCorrectAmountAndID
 	var capturedTransaction *entity.Transaction
 
 	// Mock users
-	sender := NewUser()
+	sender := NewUser(vo.CommonUserType)
 	sender.Deposit(amount)
-	receiver := NewUser()
+	receiver := NewUser(vo.CommonUserType)
 
 	senderID := uuid.MustParse(sender.ID())
 	receiverID := uuid.MustParse(receiver.ID())
@@ -202,9 +249,9 @@ func TestCreateTransaction_Execute_ShouldIncreaseReceiverBalanceByCorrectAmount(
 	expectedTransactionID := "transaction-id"
 
 	// Create users with initial balances
-	sender := NewUser()
+	sender := NewUser(vo.CommonUserType)
 	sender.Deposit(initialSenderBalance)
-	receiver := NewUser()
+	receiver := NewUser(vo.CommonUserType)
 	receiver.Deposit(initialReceiverBalance)
 
 	// Track balance changes
@@ -260,9 +307,9 @@ func TestCreateTransaction_Execute_ShouldVerifySenderBalanceIsDecreasedByCorrect
 	expectedRemainingBalance := int64((initialBalance - amount) * 100)
 
 	// Create mock sender with initial balance
-	sender := NewUser()
+	sender := NewUser(vo.CommonUserType)
 	sender.Deposit(initialBalance)
-	receiver := NewUser()
+	receiver := NewUser(vo.MerchantUserType)
 
 	// Configure mocks
 	mockAuthorizer.On("IsTransactionAllowed", ctx).Return(true)
@@ -303,9 +350,9 @@ func TestCreateTransaction_Execute_ShouldHandleTransactionWithZeroAmount(t *test
 	amount := 0.0
 
 	// Create mock users
-	sender := NewUser()
+	sender := NewUser(vo.CommonUserType)
 	sender.Deposit(100.0) // Add some initial balance
-	receiver := NewUser()
+	receiver := NewUser(vo.CommonUserType)
 
 	initialSenderBalance := sender.Balance()
 	initialReceiverBalance := receiver.Balance()
@@ -397,14 +444,22 @@ func (m *mockTransactionAuthorizerGateway) IsTransactionAllowed(ctx context.Cont
 	return args.Bool(0)
 }
 
-func NewUser() *entity.User {
+func NewUser(userType string) *entity.User {
+	var cpf, cnpj string
+
+	if userType == vo.CommonUserType {
+		cpf = "12345678901"
+	} else if userType == vo.MerchantUserType {
+		cnpj = "47775767000156"
+	}
+
 	user, err := entity.NewUser(
-		"name",
-		"email@example.com",
-		"password",
-		"12345678901",
-		"",
-		"common",
+		faker.Name(),
+		faker.Email(),
+		faker.Password(),
+		cpf,
+		cnpj,
+		userType,
 	)
 	if err != nil {
 		panic(err)

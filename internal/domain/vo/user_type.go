@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	commonUserType   = "common"
-	merchantUserType = "merchant"
+	CommonUserType   = "common"
+	MerchantUserType = "merchant"
 )
 
 type UserType struct {
@@ -14,7 +14,7 @@ type UserType struct {
 }
 
 func NewUserType(value string) (*UserType, error) {
-	validUserTypes := []string{commonUserType, merchantUserType}
+	validUserTypes := []string{CommonUserType, MerchantUserType}
 	for _, validType := range validUserTypes {
 		if value == validType {
 			return &UserType{value: value}, nil
@@ -24,11 +24,11 @@ func NewUserType(value string) (*UserType, error) {
 }
 
 func (u UserType) IsMerchant() bool {
-	return u.value == merchantUserType
+	return u.value == MerchantUserType
 }
 
 func (u UserType) IsCommon() bool {
-	return u.value == commonUserType
+	return u.value == CommonUserType
 }
 
 func (u UserType) Value() string {

@@ -36,6 +36,10 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 	var transactionID string
 
 	err := c.userRepository.UpdateBalance(ctx, input.SenderID.String(), input.ReceiverID.String(), func(sender, receiver *entity.User) (*entity.Transaction, error) {
+		if sender.IsMerchant() {
+			return nil, errs.ErrMerchantCannotSendMoney
+		}
+
 		err := sender.Withdraw(input.Amount)
 		if err != nil {
 			return nil, err
