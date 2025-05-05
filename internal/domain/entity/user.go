@@ -38,8 +38,9 @@ func (u *User) Password() string {
 	return u.password.Value
 }
 
-func (u *User) Balance() float64 {
-	return float64(u.balance.Value() / 100)
+// Returns the user's balance in cents.
+func (u *User) Balance() int64 {
+	return u.balance.Value()
 }
 
 func (u *User) CPF() string {
@@ -72,10 +73,15 @@ func (u *User) UpdatedAt() time.Time {
 	return u.updatedAt
 }
 
-func NewUser(name, email, password, cpf, cnpj string, userType string) (*User, error) {
+func NewUser(name, email, password, cpf, cnpj, userType string) (*User, error) {
 	id := uuid.New()
 	createdAt := time.Now()
 	updatedAt := time.Now()
+
+	return CreateUser(id, 0.0, name, email, password, cpf, cnpj, userType, createdAt, updatedAt, true)
+}
+
+func CreateUser(id uuid.UUID, balance float64, name, email, password, cpf, cnpj string, userType string, createdAt, updatedAt time.Time, active bool) (*User, error) {
 	userTypeEnum, err := vo.NewUserType(userType)
 	if err != nil {
 		return nil, err
@@ -116,7 +122,7 @@ func NewUser(name, email, password, cpf, cnpj string, userType string) (*User, e
 		return nil, err
 	}
 
-	money, err := vo.NewMoney(0.0)
+	money, err := vo.NewMoney(balance)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +136,7 @@ func NewUser(name, email, password, cpf, cnpj string, userType string) (*User, e
 		cpf:       cpfObj,
 		cnpj:      cnpjObj,
 		userType:  userTypeEnum,
-		active:    true,
+		active:    active,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
 	}

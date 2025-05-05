@@ -208,7 +208,7 @@ func TestCreateTransaction_Execute_ShouldIncreaseReceiverBalanceByCorrectAmount(
 	receiver.Deposit(initialReceiverBalance)
 
 	// Track balance changes
-	var actualSenderBalance, actualReceiverBalance float64
+	var actualSenderBalance, actualReceiverBalance int64
 
 	// Configure mocks
 	mockAuthorizer.On("IsTransactionAllowed", ctx).Return(true)
@@ -241,8 +241,8 @@ func TestCreateTransaction_Execute_ShouldIncreaseReceiverBalanceByCorrectAmount(
 	// Assert
 	assert.Equal(t, expectedTransactionID, result)
 	assert.NoError(t, err)
-	assert.Equal(t, initialSenderBalance-amount, actualSenderBalance, "Sender balance should be decreased by transfer amount")
-	assert.Equal(t, initialReceiverBalance+amount, actualReceiverBalance, "Receiver balance should be increased by exact transfer amount")
+	assert.Equal(t, int64((initialSenderBalance-amount)*100), actualSenderBalance, "Sender balance should be decreased by transfer amount")
+	assert.Equal(t, int64((initialReceiverBalance+amount)*100), actualReceiverBalance, "Receiver balance should be increased by exact transfer amount")
 	mockAuthorizer.AssertCalled(t, "IsTransactionAllowed", ctx)
 	mockUserRepo.AssertCalled(t, "UpdateBalance", ctx, senderID.String(), receiverID.String(), mock.AnythingOfType("func(*entity.User, *entity.User) (*entity.Transaction, error)"))
 }
@@ -257,7 +257,7 @@ func TestCreateTransaction_Execute_ShouldVerifySenderBalanceIsDecreasedByCorrect
 	receiverID := uuid.New()
 	initialBalance := 200.0
 	amount := 75.0
-	expectedRemainingBalance := initialBalance - amount
+	expectedRemainingBalance := int64((initialBalance - amount) * 100)
 
 	// Create mock sender with initial balance
 	sender := NewUser()

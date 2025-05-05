@@ -49,7 +49,9 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 
 		return transaction, nil
 	})
-
+	if err != nil {
+		return "", err
+	}
 	return transactionID, err
 }
 

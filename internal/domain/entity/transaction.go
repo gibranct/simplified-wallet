@@ -1,12 +1,17 @@
 package entity
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Transaction struct {
 	id         uuid.UUID
 	amount     float64
 	senderID   string
 	receiverID string
+	createdAt  time.Time
 }
 
 func (t *Transaction) ID() string {
@@ -25,14 +30,19 @@ func (t *Transaction) ReceiverID() string {
 	return t.receiverID
 }
 
-func NewTransaction(amount float64, senderID, receiverID string) Transaction {
+func (t *Transaction) CreatedAt() time.Time {
+	return t.createdAt
+}
+
+func NewTransaction(amount float64, senderID, receiverID string) *Transaction {
 	id := uuid.New()
 
-	transaction := Transaction{
+	transaction := &Transaction{
 		id:         id,
 		amount:     amount,
 		senderID:   senderID,
 		receiverID: receiverID,
+		createdAt:  time.Now(),
 	}
 
 	return transaction
