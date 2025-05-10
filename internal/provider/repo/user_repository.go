@@ -41,6 +41,32 @@ func (ur UserRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*en
 	return user.ToEntity()
 }
 
+func (ur UserRepository) Save(ctx context.Context, user *entity.User) error {
+	query := `INSERT INTO users 
+	(id, name, email, password, balance, cpf, cnpj, user_type, active, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING id`
+	var userID uuid.UUID
+	err := ur.db.GetContext(
+		ctx,
+		&userID,
+		query,
+		user.ID(),
+		user.Name(),
+		user.Email(),
+		user.Password(),
+		user.Balance(),
+		user.CPF(),
+		user.CNPJ(),
+		user.UserType(),
+		user.Active(),
+	)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
 func (ur UserRepository) UpdateBalance(ctx context.Context, senderID, receiverID string, updateFn func(sender, receiver *entity.User) (*entity.Transaction, error)) error {
 	return runInTx(ctx, ur.db, func(tx *sqlx.Tx) error {
 		query1 := "SELECT " + strings.Join(allUserColumns, ", ") + " FROM users WHERE id = $1"

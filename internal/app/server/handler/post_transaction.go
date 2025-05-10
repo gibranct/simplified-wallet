@@ -7,14 +7,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type CreateTransactionRequest struct {
+type PostTransactionRequest struct {
 	Amount     float64 `json:"amount"`
 	SenderID   string  `json:"sender_id"`
 	ReceiverID string  `json:"receiver_id"`
 }
 
 func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
-	var input CreateTransactionRequest
+	var input PostTransactionRequest
 
 	err := h.readJSON(w, r, &input)
 	if err != nil {
