@@ -9,7 +9,7 @@ type PostgresConfig struct {
 
 func GetPostgresConfig() PostgresConfig {
 	return PostgresConfig{
-		URI:     getEnv("POSTGRES_URI", "postgres://localhost:postgres@postgres:5432/wallet?"),
+		URI:     getEnv("POSTGRES_URI", "postgres://postgres:postgres@localhost:5432/wallet"),
 		SSLMode: getEnvAsBool("POSTGRES_SSLMODE", false),
 	}
 }
