@@ -47,7 +47,10 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 
 		receiver.Deposit(input.Amount)
 
-		transaction := entity.NewTransaction(input.Amount, sender.ID(), receiver.ID())
+		transaction, err := entity.NewTransaction(input.Amount, sender.ID(), receiver.ID())
+		if err != nil {
+			return nil, err
+		}
 
 		transactionID = transaction.ID()
 

@@ -14,11 +14,13 @@ func TestNewTransaction_ShouldCreateTransactionWithProvidedPositiveAmount(t *tes
 	receiverID := "receiver456"
 
 	// Act
-	transaction := domain.NewTransaction(amount, senderID, receiverID)
+	transaction, err := domain.NewTransaction(amount, senderID, receiverID)
 
 	// Assert
+	assert.Nil(t, err)
+	assert.NotNil(t, transaction)
 	assert.NotEmpty(t, transaction.ID())
-	assert.Equal(t, amount, transaction.Amount())
+	assert.Equal(t, int64(amount*100), transaction.Amount()) // Converted to pennies
 	assert.Equal(t, senderID, transaction.SenderID())
 	assert.Equal(t, receiverID, transaction.ReceiverID())
 }
