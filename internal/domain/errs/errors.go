@@ -17,4 +17,5 @@ var (
 	ErrZeroOrNegativeAmount           = errors.New("amount must be a positive number")
 	ErrInsufficientBalance            = errors.New("insufficient balance")
 	ErrMerchantCannotSendMoney        = errors.New("merchant user type cannot send money")
+	ErrNameLength                     = errors.New("name length must be between 3 and 50 characters")
 )
