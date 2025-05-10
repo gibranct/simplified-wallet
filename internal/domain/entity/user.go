@@ -10,7 +10,7 @@ import (
 
 type User struct {
 	id        uuid.UUID
-	name      string
+	name      *vo.Name
 	email     *vo.Email
 	password  *vo.Password
 	balance   *vo.Money
@@ -27,7 +27,7 @@ func (u *User) ID() string {
 }
 
 func (u *User) Name() string {
-	return u.name
+	return u.name.Value()
 }
 
 func (u *User) Email() string {
@@ -131,9 +131,14 @@ func CreateUser(id uuid.UUID, balance float64, name, email, password, cpf, cnpj 
 		return nil, err
 	}
 
+	newName, err := vo.NewName(name)
+	if err != nil {
+		return nil, err
+	}
+
 	user := User{
 		id:        id,
-		name:      name,
+		name:      newName,
 		email:     emailObj,
 		password:  passwordObj,
 		balance:   money,
