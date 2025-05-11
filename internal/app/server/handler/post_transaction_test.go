@@ -18,7 +18,8 @@ import (
 func TestPostTransaction_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createTransactionMock := &CreateTransactionMock{}
-	handler := handler.New(createTransactionMock)
+	createUserMock := &CreateUserMock{}
+	handler := handler.New(createTransactionMock, createUserMock)
 
 	// Create a mock HTTP request with invalid JSON
 	reader := strings.NewReader(`{"amount": "not-a-number", "sender_id": "123"}`)
@@ -45,7 +46,8 @@ func TestPostTransaction_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 func TestPostTransaction_InvalidSenderID_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createTransactionMock := &CreateTransactionMock{}
-	handler := handler.New(createTransactionMock)
+	createUserMock := &CreateUserMock{}
+	handler := handler.New(createTransactionMock, createUserMock)
 
 	// Create a mock HTTP request with invalid sender_id
 	reader := strings.NewReader(`{"amount": 100, "sender_id": "invalid-uuid", "receiver_id": "89751234-abcd-1234-efgh-567890123456"}`)
@@ -71,7 +73,8 @@ func TestPostTransaction_InvalidSenderID_ShouldReturn400(t *testing.T) {
 func TestPostTransaction_InvalidReceiverID_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createTransactionMock := &CreateTransactionMock{}
-	handler := handler.New(createTransactionMock)
+	createUserMock := &CreateUserMock{}
+	handler := handler.New(createTransactionMock, createUserMock)
 
 	// Create a mock HTTP request with invalid receiver_id
 	// uuid
@@ -100,6 +103,7 @@ func TestPostTransaction_WhenUsecaseReturnsError_ShouldReturn422(t *testing.T) {
 	expectedError := errors.New("transaction not allowed")
 
 	createTransactionMock := &CreateTransactionMock{}
+	createUserMock := &CreateUserMock{}
 	createTransactionMock.On(
 		"Execute",
 		mock.Anything,
@@ -110,7 +114,7 @@ func TestPostTransaction_WhenUsecaseReturnsError_ShouldReturn422(t *testing.T) {
 		}),
 	).Return("", expectedError)
 
-	handler := handler.New(createTransactionMock)
+	handler := handler.New(createTransactionMock, createUserMock)
 
 	// Create a request with valid JSON data
 	reqBody := `{
@@ -142,13 +146,14 @@ func TestPostTransaction_WhenUsecaseSucceeds_ShouldReturn201WithTransactionID(t 
 	expectedTransactionID := "transaction-123"
 
 	createTransactionMock := &CreateTransactionMock{}
+	createUserMock := &CreateUserMock{}
 	createTransactionMock.On(
 		"Execute",
 		mock.Anything,
 		mock.Anything,
 	).Return(expectedTransactionID, nil)
 
-	handler := handler.New(createTransactionMock)
+	handler := handler.New(createTransactionMock, createUserMock)
 
 	// Create a request with valid JSON data
 	reqBody := `{
@@ -180,6 +185,7 @@ func TestPostTransaction_NegativeAmount_ShouldReturn422(t *testing.T) {
 	expectedError := errors.New("amount must be positive")
 
 	createTransactionMock := &CreateTransactionMock{}
+	createUserMock := &CreateUserMock{}
 	createTransactionMock.On(
 		"Execute",
 		mock.Anything,
@@ -190,7 +196,7 @@ func TestPostTransaction_NegativeAmount_ShouldReturn422(t *testing.T) {
 		}),
 	).Return("", expectedError)
 
-	handler := handler.New(createTransactionMock)
+	handler := handler.New(createTransactionMock, createUserMock)
 
 	// Create a request with negative amount
 	reqBody := `{
@@ -222,6 +228,15 @@ type CreateTransactionMock struct {
 }
 
 func (m *CreateTransactionMock) Execute(ctx context.Context, input usecase.CreateTransactionInput) (string, error) {
+	args := m.Called(ctx, input)
+	return args.String(0), args.Error(1)
+}
+
+type CreateUserMock struct {
+	mock.Mock
+}
+
+func (m *CreateUserMock) Execute(ctx context.Context, input usecase.CreateUserInput) (string, error) {
 	args := m.Called(ctx, input)
 	return args.String(0), args.Error(1)
 }

@@ -1,0 +1,20 @@
+POST http://localhost:3000/v1/transaction HTTP/1.1
+content-type: application/json
+
+{
+    "amount": 100.99,
+    "sender_id": "5217d171-a6d4-463f-9400-191e46ee1a6a",
+    "receiver_id": "2b94c735-cdbd-42fa-a8e6-ff41185db500"
+}
+
+###
+
+POST http://localhost:3000/v1/users HTTP/1.1
+content-type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john2@mail.com",
+    "password": "password1325",
+    "cpf": "09899835013"
+}

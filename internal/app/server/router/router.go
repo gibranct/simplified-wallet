@@ -21,15 +21,18 @@ func InitRoutes() *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(10 * time.Second))
 
+	userRepo := repository.NewUserRepository(db.NewPostgresDB())
 	createTransaction := usecase.NewCreateTransaction(
-		repository.NewUserRepository(db.NewPostgresDB()),
+		userRepo,
 		gateway.NewTransactionAuthorizer(http.DefaultClient),
 	)
+	createUser := usecase.NewCreateUser(userRepo)
 
-	h := handler.New(&createTransaction)
+	h := handler.New(createTransaction, createUser)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Post("/transaction", h.PostTransaction)
+		r.Post("/users", h.PostUser)
 	})
 	return r
 }

@@ -65,8 +65,8 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 func NewCreateTransaction(
 	userRepository UserRepository,
 	transactionAuthorizer TransactionAuthorizerGateway,
-) CreateTransaction {
-	return CreateTransaction{
+) *CreateTransaction {
+	return &CreateTransaction{
 		userRepository:        userRepository,
 		transactionAuthorizer: transactionAuthorizer,
 	}
