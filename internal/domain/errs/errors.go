@@ -18,4 +18,7 @@ var (
 	ErrInsufficientBalance            = errors.New("insufficient balance")
 	ErrMerchantCannotSendMoney        = errors.New("merchant user type cannot send money")
 	ErrNameLength                     = errors.New("name length must be between 3 and 50 characters")
+	ErrEmailAlreadyRegistered         = errors.New("email already registered")
+	ErrCPFAlreadyRegistered           = errors.New("cpf already registered")
+	ErrCNPJAlreadyRegistered          = errors.New("cnpj already registered")
 )

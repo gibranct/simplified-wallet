@@ -50,3 +50,72 @@ func TestCreateUser_Integration_Success(t *testing.T) {
 	assert.Equal(t, "12345678901", cpf)
 	assert.Equal(t, "common", user_type)
 }
+
+func TestCreateUser_ShouldFailIfEmailIsAlreadyRegistered(t *testing.T) {
+	ctx := context.Background()
+	migrateVersion := uint(3) // Use the latest migration version
+
+	// Setup
+	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+	defer db.Close()
+
+	userRepo := repository.NewUserRepository(db)
+
+	// Create use case
+	createUserUseCase := usecase.NewCreateUser(userRepo)
+
+	input := usecase.CreateUserInput{
+		Name:     "John Doe",
+		Email:    "john2@example.com",
+		Password: "password123",
+		CPF:      "31094680001",
+	}
+
+	// Act
+	createUserUseCase.Execute(ctx, input)
+	userID, err := createUserUseCase.Execute(ctx, input)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Equal(t, "email already registered", err.Error())
+	assert.Empty(t, userID)
+}
+
+func TestCreateUser_ShouldFailIfCPFIsAlreadyRegistered(t *testing.T) {
+	ctx := context.Background()
+	migrateVersion := uint(3) // Use the latest migration version
+
+	// Setup
+	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	require.NoError(t, err)
+	defer container.Terminate(ctx)
+	defer db.Close()
+
+	userRepo := repository.NewUserRepository(db)
+
+	// Create use case
+	createUserUseCase := usecase.NewCreateUser(userRepo)
+
+	input := usecase.CreateUserInput{
+		Name:     "John Doe",
+		Email:    "john@example.com",
+		Password: "password123",
+		CPF:      "12345678901",
+	}
+
+	// Act
+	createUserUseCase.Execute(ctx, input)
+	userID, err := createUserUseCase.Execute(ctx, usecase.CreateUserInput{
+		Name:     "Jane Doe",
+		Email:    "jane@example.com",
+		Password: "password456",
+		CPF:      input.CPF,
+	})
+
+	// Assert
+	assert.Error(t, err)
+	assert.Equal(t, "cpf already registered", err.Error())
+	assert.Empty(t, userID)
+}

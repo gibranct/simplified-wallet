@@ -79,3 +79,11 @@ func (m *mockUserRepository) Save(ctx context.Context, user *entity.User) error 
 	args := m.Called(ctx, user)
 	return args.Error(0)
 }
+
+func (m *mockUserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
+	return false, nil // Assume email uniqueness is not enforced
+}
+
+func (m *mockUserRepository) ExistsByCPF(ctx context.Context, cpf string) (bool, error) {
+	return false, nil // Assume CPF uniqueness is not enforced
+}
