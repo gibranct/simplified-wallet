@@ -228,7 +228,7 @@ func TestCreateTransaction_Execute_ShouldCreateTransactionWithCorrectAmountAndID
 	assert.NoError(t, err)
 	assert.NotEmpty(t, result)
 	assert.NotNil(t, capturedTransaction)
-	assert.Equal(t, amount, capturedTransaction.Amount())
+	assert.Equal(t, int64(amount*100), capturedTransaction.Amount())
 	assert.Equal(t, senderID.String(), capturedTransaction.SenderID())
 	assert.Equal(t, receiverID.String(), capturedTransaction.ReceiverID())
 	mockAuthorizer.AssertCalled(t, "IsTransactionAllowed", ctx)

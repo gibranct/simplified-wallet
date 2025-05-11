@@ -26,7 +26,7 @@ func TestNewUser_ShouldSuccessfullyCreateCommonUserWithValidInputParameters(t *t
 	assert.Equal(t, name, user.Name())
 	assert.Equal(t, email, user.Email())
 	assert.NotEqual(t, password, user.Password()) // Password should be hashed
-	assert.Equal(t, 0.0, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 	assert.Equal(t, cpf, user.CPF())
 	assert.Empty(t, user.CNPJ())
 	assert.Equal(t, userType, user.UserType())
@@ -53,7 +53,7 @@ func TestNewUser_ShouldSuccessfullyCreateMerchantUserWithValidInputParameters(t 
 	assert.Equal(t, name, user.Name())
 	assert.Equal(t, email, user.Email())
 	assert.NotEqual(t, password, user.Password()) // Password should be hashed
-	assert.Equal(t, 0.0, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 	assert.Empty(t, user.CPF())
 	assert.Equal(t, cnpj, user.CNPJ())
 	assert.Equal(t, userType, user.UserType())
@@ -136,13 +136,13 @@ func TestUser_Deposit_ShouldCorrectlyUpdateBalanceWithPositiveAmount(t *testing.
 
 	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 
 	// Act
 	user.Deposit(depositAmount)
 
 	// Assert
-	assert.Equal(t, initialBalance+depositAmount, user.Balance())
+	assert.Equal(t, int64(initialBalance+depositAmount)*100, user.Balance())
 }
 
 func TestUser_Deposit_ShouldNotChangeBalanceWithZeroAmount(t *testing.T) {
@@ -153,18 +153,17 @@ func TestUser_Deposit_ShouldNotChangeBalanceWithZeroAmount(t *testing.T) {
 	cpf := "12345678909"
 	cnpj := ""
 	userType := "common"
-	initialBalance := 0.0
 	depositAmount := 0.0
 
 	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 
 	// Act
 	user.Deposit(depositAmount)
 
 	// Assert
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 }
 
 func TestUser_Deposit_ShouldNotChangeBalanceWithNegativeAmount(t *testing.T) {
@@ -180,13 +179,13 @@ func TestUser_Deposit_ShouldNotChangeBalanceWithNegativeAmount(t *testing.T) {
 
 	user, err := entity.NewUser(name, email, password, cpf, cnpj, userType)
 	assert.NoError(t, err)
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 
 	// Act
 	user.Deposit(depositAmount)
 
 	// Assert
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(initialBalance*100), user.Balance())
 }
 
 func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountIsPositiveAndLessThanBalance(t *testing.T) {
@@ -204,7 +203,7 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountIsPositiveAndLessThan
 
 	// Set initial balance with deposit
 	user.Deposit(initialBalance)
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(initialBalance*100), user.Balance())
 
 	withdrawAmount := 50.0
 
@@ -213,7 +212,7 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountIsPositiveAndLessThan
 
 	// Assert
 	assert.NoError(t, err)
-	assert.Equal(t, initialBalance-withdrawAmount, user.Balance())
+	assert.Equal(t, int64(initialBalance-withdrawAmount)*100, user.Balance())
 }
 
 func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountEqualsEntireBalance(t *testing.T) {
@@ -231,7 +230,7 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountEqualsEntireBalance(t
 
 	// Set initial balance with deposit
 	user.Deposit(initialBalance)
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(initialBalance*100), user.Balance())
 
 	withdrawAmount := 100.0 // Withdrawing the entire balance
 
@@ -240,7 +239,7 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountEqualsEntireBalance(t
 
 	// Assert
 	assert.NoError(t, err)
-	assert.Equal(t, 0.0, user.Balance())
+	assert.Equal(t, int64(0), user.Balance())
 }
 
 func TestUser_Withdraw_ShouldReturnFalseWhenTryingToWithdrawMoreThanAvailableBalance(t *testing.T) {
@@ -258,7 +257,7 @@ func TestUser_Withdraw_ShouldReturnFalseWhenTryingToWithdrawMoreThanAvailableBal
 
 	// Set initial balance with deposit
 	user.Deposit(initialBalance)
-	assert.Equal(t, initialBalance, user.Balance())
+	assert.Equal(t, int64(initialBalance*100), user.Balance())
 
 	withdrawAmount := 100.0 // Attempting to withdraw more than available
 
@@ -267,5 +266,5 @@ func TestUser_Withdraw_ShouldReturnFalseWhenTryingToWithdrawMoreThanAvailableBal
 
 	// Assert
 	assert.NotNil(t, err)
-	assert.Equal(t, initialBalance, user.Balance()) // Balance should remain unchanged
+	assert.Equal(t, int64(initialBalance*100), user.Balance()) // Balance should remain unchanged
 }
