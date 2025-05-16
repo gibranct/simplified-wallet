@@ -79,19 +79,20 @@ func (ur UserRepository) Save(ctx context.Context, user *entity.User) error {
 	(id, name, email, password, balance, cpf, cnpj, user_type, active, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING id`
 	var userID uuid.UUID
+	userModel := model.NewUserModelFrom(user)
 	err := ur.db.GetContext(
 		ctx,
 		&userID,
 		query,
-		user.ID(),
-		user.Name(),
-		user.Email(),
-		user.Password(),
-		user.Balance(),
-		user.CPF(),
-		user.CNPJ(),
-		user.UserType(),
-		user.Active(),
+		userModel.ID,
+		userModel.Name,
+		userModel.Email,
+		userModel.Password,
+		userModel.Balance,
+		userModel.CPF,
+		userModel.CNPJ,
+		userModel.UserType,
+		userModel.Active,
 	)
 	if err != nil {
 		log.Println(err)

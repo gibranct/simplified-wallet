@@ -21,4 +21,5 @@ var (
 	ErrEmailAlreadyRegistered         = errors.New("email already registered")
 	ErrCPFAlreadyRegistered           = errors.New("cpf already registered")
 	ErrCNPJAlreadyRegistered          = errors.New("cnpj already registered")
+	ErrUserTypeNotFound               = errors.New("user type not found")
 )

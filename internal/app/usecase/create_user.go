@@ -3,26 +3,30 @@ package usecase
 import (
 	"context"
 
-	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
+	"github.com.br/gibranct/simplified-wallet/internal/app/usecase/strategy"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
-	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
 )
 
 type CreateUserRepository interface {
-	Save(ctx context.Context, user *entity.User) error
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
-	ExistsByCPF(ctx context.Context, cpf string) (bool, error)
+}
+
+type CreateUserStrategy interface {
+	UserType() string
+	Execute(ctx context.Context, input strategy.CreateUserStrategyInput) (string, error)
 }
 
 type CreateUser struct {
 	userRepository CreateUserRepository
+	strategies     []CreateUserStrategy
 }
 
 type CreateUserInput struct {
 	Name     string
 	Email    string
 	Password string
-	CPF      string
+	Document string
+	UserType string
 }
 
 func (cus *CreateUser) Execute(ctx context.Context, input CreateUserInput) (string, error) {
@@ -33,33 +37,30 @@ func (cus *CreateUser) Execute(ctx context.Context, input CreateUserInput) (stri
 	if exists {
 		return "", errs.ErrEmailAlreadyRegistered
 	}
-	exists, err = cus.userRepository.ExistsByCPF(ctx, input.CPF)
+	var cuStrategy CreateUserStrategy
+	for _, s := range cus.strategies {
+		if s.UserType() == input.UserType {
+			cuStrategy = s
+		}
+	}
+	if cuStrategy == nil {
+		return "", errs.ErrUserTypeNotFound
+	}
+	userID, err := cuStrategy.Execute(ctx, strategy.CreateUserStrategyInput{
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: input.Password,
+		Document: input.Document,
+	})
 	if err != nil {
 		return "", err
 	}
-	if exists {
-		return "", errs.ErrCPFAlreadyRegistered
-	}
-	user, err := entity.NewUser(
-		input.Name,
-		input.Email,
-		input.Password,
-		input.CPF,
-		"",
-		vo.CommonUserType,
-	)
-	if err != nil {
-		return "", err
-	}
-	err = cus.userRepository.Save(ctx, user)
-	if err != nil {
-		return "", err
-	}
-	return user.ID(), nil
+	return userID, nil
 }
 
-func NewCreateUser(userRepository CreateUserRepository) *CreateUser {
+func NewCreateUser(userRepository CreateUserRepository, strategies []CreateUserStrategy) *CreateUser {
 	return &CreateUser{
 		userRepository: userRepository,
+		strategies:     strategies,
 	}
 }

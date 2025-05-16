@@ -65,6 +65,10 @@ func (u *User) IsMerchant() bool {
 	return u.userType.IsMerchant()
 }
 
+func (u *User) Type() string {
+	return u.userType.Value()
+}
+
 func (u *User) Active() bool {
 	return u.active
 }
