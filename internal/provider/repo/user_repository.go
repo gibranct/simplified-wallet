@@ -52,6 +52,17 @@ func (ur UserRepository) ExistsByCPF(ctx context.Context, cpf string) (bool, err
 	return exists, nil
 }
 
+func (ur UserRepository) ExistsByCNPJ(ctx context.Context, cnpj string) (bool, error) {
+	var exists bool
+	query := "SELECT EXISTS(SELECT 1 FROM users WHERE cnpj = $1)"
+	err := ur.db.GetContext(ctx, &exists, query, cnpj)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+	return exists, nil
+}
+
 func (ur UserRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
 	var user model.UserModel
 	query := "SELECT " + strings.Join(allUserColumns, ", ") + " FROM users WHERE id = $1"
