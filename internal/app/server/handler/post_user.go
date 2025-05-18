@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
 )
 
 type PostUserRequest struct {
@@ -26,7 +27,8 @@ func (h handler) PostUser(w http.ResponseWriter, r *http.Request) {
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
-		CPF:      input.CPF,
+		Document: input.CPF,
+		UserType: vo.CommonUserType,
 	})
 
 	if err != nil {

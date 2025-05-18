@@ -6,6 +6,7 @@ import (
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/server/handler"
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
+	"github.com.br/gibranct/simplified-wallet/internal/app/usecase/strategy"
 	"github.com.br/gibranct/simplified-wallet/internal/provider/db"
 	"github.com.br/gibranct/simplified-wallet/internal/provider/gateway"
 	repository "github.com.br/gibranct/simplified-wallet/internal/provider/repo"
@@ -26,7 +27,11 @@ func InitRoutes() *chi.Mux {
 		userRepo,
 		gateway.NewTransactionAuthorizer(http.DefaultClient),
 	)
-	createUser := usecase.NewCreateUser(userRepo)
+	strategies := []usecase.CreateUserStrategy{
+		strategy.NewCreateCommonUser(userRepo),
+		strategy.NewCreateMerchantUser(userRepo),
+	}
+	createUser := usecase.NewCreateUser(userRepo, strategies)
 
 	h := handler.New(createTransaction, createUser)
 

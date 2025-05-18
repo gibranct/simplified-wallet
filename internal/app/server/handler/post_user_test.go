@@ -56,7 +56,7 @@ func TestPostUser_EmailAlreadyRegistered_ShouldReturn422(t *testing.T) {
 			return input.Name == "John Doe" &&
 				input.Email == "john@example.com" &&
 				input.Password == "password123" &&
-				input.CPF == "12345678901"
+				input.Document == "12345678901"
 		}),
 	).Return("", expectedError)
 
@@ -101,7 +101,7 @@ func TestPostUser_SuccessfulCreation_ShouldReturn201WithUserID(t *testing.T) {
 			return input.Name == "John Doe" &&
 				input.Email == "john@example.com" &&
 				input.Password == "password123" &&
-				input.CPF == "12345678901"
+				input.Document == "12345678901"
 		}),
 	).Return(expectedUserID, nil)
 
