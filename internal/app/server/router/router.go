@@ -38,6 +38,7 @@ func InitRoutes() *chi.Mux {
 	r.Route("/v1", func(r chi.Router) {
 		r.Post("/transaction", h.PostTransaction)
 		r.Post("/users", h.PostUser)
+		r.Post("/merchants", h.PostMerchant)
 	})
 	return r
 }

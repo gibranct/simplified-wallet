@@ -7,15 +7,15 @@ import (
 	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
 )
 
-type PostUserRequest struct {
+type PostMerchantRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	CPF      string `json:"cpf"`
+	CNPJ     string `json:"cnpj"`
 }
 
-func (h handler) PostUser(w http.ResponseWriter, r *http.Request) {
-	var input PostUserRequest
+func (h handler) PostMerchant(w http.ResponseWriter, r *http.Request) {
+	var input PostMerchantRequest
 
 	err := h.readJSON(w, r, &input)
 	if err != nil {
@@ -27,8 +27,8 @@ func (h handler) PostUser(w http.ResponseWriter, r *http.Request) {
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
-		Document: input.CPF,
-		UserType: vo.CommonUserType,
+		Document: input.CNPJ,
+		UserType: vo.MerchantUserType,
 	})
 
 	if err != nil {

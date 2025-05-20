@@ -22,7 +22,7 @@ func TestPostUser_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 
 	// Create a mock HTTP request with invalid JSON
 	reader := strings.NewReader(`{"name": "John Doe", "email": "invalid-json`)
-	r, _ := http.NewRequest("POST", "/users", reader)
+	r, _ := http.NewRequest("POST", "/v1/users", reader)
 
 	// Create a response recorder to record the HTTP response
 	w := httptest.NewRecorder()
@@ -69,7 +69,7 @@ func TestPostUser_EmailAlreadyRegistered_ShouldReturn422(t *testing.T) {
 		"password": "password123",
 		"cpf": "12345678901"
 	}`
-	r, _ := http.NewRequest("POST", "/users", strings.NewReader(reqBody))
+	r, _ := http.NewRequest("POST", "/v1/users", strings.NewReader(reqBody))
 	w := httptest.NewRecorder()
 
 	// Act
@@ -114,7 +114,7 @@ func TestPostUser_SuccessfulCreation_ShouldReturn201WithUserID(t *testing.T) {
 		"password": "password123",
 		"cpf": "12345678901"
 	}`
-	r, _ := http.NewRequest("POST", "/users", strings.NewReader(reqBody))
+	r, _ := http.NewRequest("POST", "/v1/users", strings.NewReader(reqBody))
 	w := httptest.NewRecorder()
 
 	// Act

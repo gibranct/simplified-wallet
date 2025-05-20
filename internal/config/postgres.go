@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type PostgresConfig struct {
 	URI     string
@@ -18,6 +21,9 @@ func (p PostgresConfig) GetPostgresURL() string {
 	sslMode := "disable"
 	if p.SSLMode {
 		sslMode = "require"
+	}
+	if strings.HasSuffix(p.URI, "?sslmode=disable") {
+		return p.URI
 	}
 	return fmt.Sprintf(
 		"%s?sslmode=%s",
