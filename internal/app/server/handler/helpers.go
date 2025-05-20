@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -88,7 +89,7 @@ func (h *handler) readJSON(w http.ResponseWriter, r *http.Request, dst any) erro
 			return fmt.Errorf("body must not be larger than %d bytes", maxBytesError.Limit)
 
 		case errors.As(err, &invalidUnmarshalError):
-			panic(err)
+			log.Panicf("invalid JSON value: %v\n", err)
 
 		default:
 			return err

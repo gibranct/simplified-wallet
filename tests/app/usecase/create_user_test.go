@@ -1,4 +1,4 @@
-package test
+package usecase_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase/strategy"
 	repository "github.com.br/gibranct/simplified-wallet/internal/provider/repo"
+	test "github.com.br/gibranct/simplified-wallet/tests"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func TestCreateCommonUser_Integration_Success(t *testing.T) {
 	migrateVersion := uint(2) // Use the latest migration version
 
 	// Setup
-	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
@@ -63,7 +64,7 @@ func TestCreateMerchantUser_Integration_Success(t *testing.T) {
 	migrateVersion := uint(2) // Use the latest migration version
 
 	// Setup
-	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
@@ -107,7 +108,7 @@ func TestCreateUser_ShouldFailIfEmailIsAlreadyRegistered(t *testing.T) {
 	migrateVersion := uint(3) // Use the latest migration version
 
 	// Setup
-	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
@@ -140,7 +141,7 @@ func TestCreateUser_ShouldFailIfCPFIsAlreadyRegistered(t *testing.T) {
 	migrateVersion := uint(3) // Use the latest migration version
 
 	// Setup
-	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
@@ -179,7 +180,7 @@ func TestCreateUser_ShouldFailIfCNPJIsAlreadyRegistered(t *testing.T) {
 	migrateVersion := uint(3) // Use the latest migration version
 
 	// Setup
-	container, db, err := setupTestDatabase(ctx, migrateVersion)
+	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
