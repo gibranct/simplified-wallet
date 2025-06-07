@@ -5,6 +5,7 @@ import (
 
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
+	"github.com.br/gibranct/simplified-wallet/internal/domain/event"
 	"github.com/google/uuid"
 )
 
@@ -17,11 +18,15 @@ type TransactionAuthorizerGateway interface {
 	IsTransactionAllowed(ctx context.Context) bool
 }
 
+type Queue interface {
+	Send(ctx context.Context, message []byte) error
+}
+
 type CreateTransaction struct {
 	userRepository        UserRepository
 	transactionAuthorizer TransactionAuthorizerGateway
+	queue                 Queue
 }
-
 type CreateTransactionInput struct {
 	Amount     float64
 	SenderID   uuid.UUID
@@ -45,7 +50,10 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 			return nil, err
 		}
 
-		receiver.Deposit(input.Amount)
+		err = receiver.Deposit(input.Amount)
+		if err != nil {
+			return nil, err
+		}
 
 		transaction, err := entity.NewTransaction(input.Amount, sender.ID(), receiver.ID())
 		if err != nil {
@@ -54,20 +62,29 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 
 		transactionID = transaction.ID()
 
+		eventTransaction := event.NewCreateTransactionEventV1(transactionID, input.Amount, input.SenderID, input.ReceiverID)
+		err = c.queue.Send(ctx, eventTransaction.ToJSON())
+		if err != nil {
+			return nil, err
+		}
+
 		return transaction, nil
 	})
 	if err != nil {
 		return "", err
 	}
+
 	return transactionID, err
 }
 
 func NewCreateTransaction(
 	userRepository UserRepository,
 	transactionAuthorizer TransactionAuthorizerGateway,
+	queue Queue,
 ) *CreateTransaction {
 	return &CreateTransaction{
 		userRepository:        userRepository,
 		transactionAuthorizer: transactionAuthorizer,
+		queue:                 queue,
 	}
 }
