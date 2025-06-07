@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com.br/gibranct/simplified-wallet/internal/provider/queue"
 	"net/http"
 	"time"
 
@@ -26,6 +27,7 @@ func InitRoutes() *chi.Mux {
 	createTransaction := usecase.NewCreateTransaction(
 		userRepo,
 		gateway.NewTransactionAuthorizer(http.DefaultClient),
+		queue.NewSNS(),
 	)
 	strategies := []usecase.CreateUserStrategy{
 		strategy.NewCreateCommonUser(userRepo),
@@ -36,7 +38,7 @@ func InitRoutes() *chi.Mux {
 	h := handler.New(createTransaction, createUser)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Post("/transaction", h.PostTransaction)
+		r.Post("/transactions", h.PostTransaction)
 		r.Post("/users", h.PostUser)
 		r.Post("/merchants", h.PostMerchant)
 	})

@@ -78,9 +78,10 @@ func TestCreateTransaction_Integration_Success(t *testing.T) {
 
 	userRepo := repository.NewUserRepository(db)
 	authorizerGateway := NewMockTransactionAuthorizerGateway(true) // Always authorize
+	snsService := NewMockQueue()
 
 	// Create use case
-	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway)
+	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway, snsService)
 
 	// Execute transaction
 	amount := 400.0
@@ -135,9 +136,10 @@ func TestCreateTransaction_Integration_Rollback(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 
 	authorizerGateway := NewMockTransactionAuthorizerGateway(true) // Always authorize
+	snsService := NewMockQueue()
 
 	// Create use case with the failing repository
-	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway)
+	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway, snsService)
 
 	// Get initial balances
 	initialSenderBalance, err := getBalance(ctx, db, senderID)
@@ -183,4 +185,14 @@ func NewMockTransactionAuthorizerGateway(authorize bool) *TransactionAuthorizerG
 
 func (m *TransactionAuthorizerGatewayMock) IsTransactionAllowed(ctx context.Context) bool {
 	return m.authorize
+}
+
+type QueueMock struct{}
+
+func (m *QueueMock) Send(ctx context.Context, message []byte) error {
+	return nil
+}
+
+func NewMockQueue() *QueueMock {
+	return &QueueMock{}
 }
