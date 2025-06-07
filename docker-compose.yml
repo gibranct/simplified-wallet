@@ -9,6 +9,28 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  
+
+  localstack:
+    image: localstack/localstack:3.0.0
+    environment:
+      - SERVICES=sns,sqs
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    ports:
+      - "4566:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - localstack_data:/var/lib/localstack
+      - ./localstack-init.sh:/docker-entrypoint-initaws.d/localstack-init.sh
+    healthcheck:
+      test: ["CMD", "awslocal", "sns", "list-topics"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
 volumes:
   postgres_data:
+  localstack_data:
