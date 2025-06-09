@@ -1,10 +1,10 @@
-POST http://localhost:3000/v1/transaction HTTP/1.1
+POST http://localhost:3000/v1/transactions HTTP/1.1
 content-type: application/json
 
 {
     "amount": 100.99,
-    "sender_id": "5217d171-a6d4-463f-9400-191e46ee1a6a",
-    "receiver_id": "2b94c735-cdbd-42fa-a8e6-ff41185db500"
+    "sender_id": "7250961f-c104-46dd-9447-d57b4f5a2be4",
+    "receiver_id": "d47d6618-7f43-47dc-a33c-be833f5e6ef8"
 }
 
 ###
@@ -13,8 +13,20 @@ POST http://localhost:3000/v1/users HTTP/1.1
 content-type: application/json
 
 {
-    "name": "John Doe",
-    "email": "john2@mail.com",
-    "password": "password1325",
-    "cpf": "09899835013"
+  "name": "John Doe",
+  "email": "john22@mail.com",
+  "password": "password1325",
+  "cpf": "54075359042"
+}
+
+###
+
+POST http://localhost:3000/v1/merchants HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Business Corp",
+  "email": "business@corp.com",
+  "password": "securepassword123",
+  "cnpj": "12345678000190"
 }

@@ -12,6 +12,9 @@ APP_NAME=simplified-wallet
 # Docker related variables
 DOCKER_COMPOSE=docker compose
 
+# Script related variables
+aws-local=
+
 # Default target
 .DEFAULT_GOAL := help
 
@@ -86,6 +89,11 @@ docker-up:
 docker-down:
 	@echo "Stopping Docker containers..."
 	@$(DOCKER_COMPOSE) down
+
+## create-queue: Create SNS topic and SQS subscription
+create-queue:
+	@echo "Create topic and queue..."
+	@./localstack-init.sh
 
 ## help: Display this help message
 help:
