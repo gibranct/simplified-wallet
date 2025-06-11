@@ -15,6 +15,9 @@ type PostMerchantRequest struct {
 }
 
 func (h handler) PostMerchant(w http.ResponseWriter, r *http.Request) {
+	ctx, span := h.otel.Start(r.Context(), "PostMerchant")
+	defer span.End()
+
 	var input PostMerchantRequest
 
 	err := h.readJSON(w, r, &input)
@@ -23,7 +26,7 @@ func (h handler) PostMerchant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.createUser.Execute(r.Context(), usecase.CreateUserInput{
+	userID, err := h.createUser.Execute(ctx, usecase.CreateUserInput{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,

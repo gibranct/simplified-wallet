@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ type Client interface {
 type TransactionAuthorizer struct {
 	httpClient Client
 	logger     *log.Logger
+	otel       telemetry.Telemetry
 }
 
 func (ta *TransactionAuthorizer) IsTransactionAllowed(ctx context.Context) bool {
@@ -30,9 +32,10 @@ func (ta *TransactionAuthorizer) IsTransactionAllowed(ctx context.Context) bool 
 	return resp.StatusCode == http.StatusOK
 }
 
-func NewTransactionAuthorizer(httpClient Client) *TransactionAuthorizer {
+func NewTransactionAuthorizer(httpClient Client, otel telemetry.Telemetry) *TransactionAuthorizer {
 	return &TransactionAuthorizer{
 		httpClient: httpClient,
 		logger:     log.New(os.Stdout, "transaction_authorizer: ", log.LstdFlags),
+		otel:       otel,
 	}
 }

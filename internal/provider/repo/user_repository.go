@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"log"
 	"strings"
 
@@ -13,7 +14,8 @@ import (
 )
 
 type UserRepository struct {
-	db *sqlx.DB
+	db   *sqlx.DB
+	otel telemetry.Telemetry
 }
 
 var allUserColumns = []string{
@@ -151,6 +153,6 @@ func (ur UserRepository) UpdateBalance(ctx context.Context, senderID, receiverID
 	})
 }
 
-func NewUserRepository(db *sqlx.DB) UserRepository {
-	return UserRepository{db: db}
+func NewUserRepository(db *sqlx.DB, otel telemetry.Telemetry) UserRepository {
+	return UserRepository{db: db, otel: otel}
 }

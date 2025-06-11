@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
@@ -26,6 +27,7 @@ type CreateTransaction struct {
 	userRepository        UserRepository
 	transactionAuthorizer TransactionAuthorizerGateway
 	queue                 Queue
+	otel                  telemetry.Telemetry
 }
 type CreateTransactionInput struct {
 	Amount     float64
@@ -34,6 +36,8 @@ type CreateTransactionInput struct {
 }
 
 func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransactionInput) (string, error) {
+	ctx, span := c.otel.Start(ctx, "CreateTransaction")
+	defer span.End()
 	if !c.transactionAuthorizer.IsTransactionAllowed(ctx) {
 		return "", errs.ErrTransactionNotAllowed
 	}
@@ -81,10 +85,12 @@ func NewCreateTransaction(
 	userRepository UserRepository,
 	transactionAuthorizer TransactionAuthorizerGateway,
 	queue Queue,
+	otel telemetry.Telemetry,
 ) *CreateTransaction {
 	return &CreateTransaction{
 		userRepository:        userRepository,
 		transactionAuthorizer: transactionAuthorizer,
 		queue:                 queue,
+		otel:                  otel,
 	}
 }

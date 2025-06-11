@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
@@ -15,6 +16,7 @@ type CreateCommonUserRepository interface {
 
 type CreateCommonUser struct {
 	repository CreateCommonUserRepository
+	otel       telemetry.Telemetry
 }
 
 func (cuc *CreateCommonUser) UserType() string {
@@ -22,6 +24,9 @@ func (cuc *CreateCommonUser) UserType() string {
 }
 
 func (cuc *CreateCommonUser) Execute(ctx context.Context, input CreateUserStrategyInput) (string, error) {
+	ctx, span := cuc.otel.Start(ctx, "CreateCommonUser")
+	defer span.End()
+
 	exists, err := cuc.repository.ExistsByCPF(ctx, input.Document)
 	if err != nil {
 		return "", err
@@ -48,8 +53,9 @@ func (cuc *CreateCommonUser) Execute(ctx context.Context, input CreateUserStrate
 	return user.ID(), nil
 }
 
-func NewCreateCommonUser(repository CreateCommonUserRepository) *CreateCommonUser {
+func NewCreateCommonUser(repository CreateCommonUserRepository, otel telemetry.Telemetry) *CreateCommonUser {
 	return &CreateCommonUser{
 		repository: repository,
+		otel:       otel,
 	}
 }

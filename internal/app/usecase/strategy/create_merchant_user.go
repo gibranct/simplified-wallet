@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
@@ -15,6 +16,7 @@ type CreateMerchantUserRepository interface {
 
 type CreateMerchantUser struct {
 	repository CreateMerchantUserRepository
+	otel       telemetry.Telemetry
 }
 
 func (cuc *CreateMerchantUser) UserType() string {
@@ -22,6 +24,9 @@ func (cuc *CreateMerchantUser) UserType() string {
 }
 
 func (cuc *CreateMerchantUser) Execute(ctx context.Context, input CreateUserStrategyInput) (string, error) {
+	ctx, span := cuc.otel.Start(ctx, "CreateMerchantUser")
+	defer span.End()
+
 	exists, err := cuc.repository.ExistsByCNPJ(ctx, input.Document)
 	if err != nil {
 		return "", err
@@ -48,8 +53,9 @@ func (cuc *CreateMerchantUser) Execute(ctx context.Context, input CreateUserStra
 	return user.ID(), nil
 }
 
-func NewCreateMerchantUser(repository CreateMerchantUserRepository) *CreateMerchantUser {
+func NewCreateMerchantUser(repository CreateMerchantUserRepository, otel telemetry.Telemetry) *CreateMerchantUser {
 	return &CreateMerchantUser{
 		repository: repository,
+		otel:       otel,
 	}
 }

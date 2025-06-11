@@ -14,7 +14,7 @@ content-type: application/json
 
 {
   "name": "John Doe",
-  "email": "john22@mail.com",
+  "email": "john2@mail.com",
   "password": "password1325",
   "cpf": "54075359042"
 }

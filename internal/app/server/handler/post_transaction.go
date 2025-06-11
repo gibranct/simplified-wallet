@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"github.com.br/gibranct/simplified-wallet/internal/provider/metrics"
+	"go.opentelemetry.io/otel/attribute"
 	"net/http"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
@@ -14,6 +16,9 @@ type PostTransactionRequest struct {
 }
 
 func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
+	ctx, span := h.otel.Start(r.Context(), "PostTransaction")
+	defer span.End()
+
 	var input PostTransactionRequest
 
 	err := h.readJSON(w, r, &input)
@@ -34,7 +39,7 @@ func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transactionID, err := h.createTransaction.Execute(r.Context(), usecase.CreateTransactionInput{
+	transactionID, err := h.createTransaction.Execute(ctx, usecase.CreateTransactionInput{
 		Amount:     input.Amount,
 		SenderID:   senderID,
 		ReceiverID: receiverID,
@@ -46,6 +51,17 @@ func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.writeJson(w, http.StatusCreated, envelope{"transaction_id": transactionID}, nil)
+
+	// After successful transaction creation:
+	metrics.TransactionCounter.Inc()
+	metrics.TransactionAmount.Add(input.Amount)
+
+	// Add transaction details to the span
+	span.SetAttributes(
+		attribute.Float64("transaction.amount", input.Amount),
+		attribute.String("transaction.sender_id", input.SenderID),
+		attribute.String("transaction.receiver_id", input.ReceiverID),
+	)
 
 	return
 }

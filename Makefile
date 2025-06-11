@@ -95,6 +95,16 @@ create-queue:
 	@echo "Create topic and queue..."
 	@./localstack-init.sh
 
+## metrics: Open Prometheus metrics dashboard
+metrics:
+	@echo "Opening Prometheus dashboard..."
+	@open http://localhost:9090
+
+## tracing: Open Jaeger tracing dashboard
+tracing:
+	@echo "Opening Jaeger dashboard..."
+	@open http://localhost:16686
+
 ## help: Display this help message
 help:
 	@echo "Usage: make [target]"

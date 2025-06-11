@@ -178,3 +178,34 @@ For a list of all available commands:
 ```shell
 make help
 ```
+
+## Metrics and Tracing
+
+The application includes metrics and distributed tracing capabilities:
+
+### Prometheus Metrics
+
+Metrics are exposed at the `/metrics` endpoint and can be visualized in the Prometheus dashboard:
+
+```shell
+make metrics
+```
+
+Key metrics include:
+- `http_requests_total`: Total number of HTTP requests
+- `http_request_duration_seconds`: Duration of HTTP requests
+- `transactions_total`: Total number of transactions
+- `transactions_amount_total`: Total amount of transactions
+
+### Jaeger Tracing
+
+Distributed tracing is implemented using Jaeger. View traces in the Jaeger UI:
+
+```shell
+make tracing
+```
+
+This provides insights into:
+- Request flow through the system
+- Performance bottlenecks
+- Error propagation

@@ -10,6 +10,10 @@ import (
 )
 
 func Run() {
+	// Initialize tracing
+	//cleanup := tracing.InitTracer()
+	//defer cleanup()
+
 	dbConfig := config.GetPostgresConfig()
 	m, err := migrate.New(
 		"file://migrations",
