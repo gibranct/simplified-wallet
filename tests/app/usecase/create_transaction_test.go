@@ -67,9 +67,24 @@ func TestCreateTransaction_Integration_Success(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
-	defer otel.Shutdown(ctx)
+	defer func() {
+		err := container.Terminate(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := otel.Shutdown(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
 	cpf := "86395839004"
 	cnpj := "71627571000107"
 
@@ -127,8 +142,24 @@ func TestCreateTransaction_Integration_Rollback(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
+	defer func() {
+		err := container.Terminate(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := otel.Shutdown(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
 	cpf := "86395839004"
 	cnpj := "71627571000107"
 

@@ -3,7 +3,7 @@ package telemetry
 import (
 	"context"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
@@ -12,14 +12,14 @@ import (
 	"log"
 )
 
-type Jaeger struct {
+type Tracer struct {
 	provider *tracesdk.TracerProvider
 	tracer   trace.Tracer
 }
 
-func NewJaeger(ctx context.Context, serviceName string) (*Jaeger, error) {
+func NewJaeger(ctx context.Context, serviceName string) (*Tracer, error) {
 	var tp *tracesdk.TracerProvider
-	tp, err := createJaegerTraceProvider(ctx, serviceName)
+	tp, err := createTraceProvider(ctx, serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -27,35 +27,36 @@ func NewJaeger(ctx context.Context, serviceName string) (*Jaeger, error) {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	tracer := tp.Tracer(serviceName)
 
-	return &Jaeger{
+	return &Tracer{
 		provider: tp,
 		tracer:   tracer,
 	}, nil
 }
 
-func (ot *Jaeger) Start(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, Span) {
+func (ot *Tracer) Start(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, Span) {
 	if len(opts) == 0 {
 		return ot.tracer.Start(ctx, name)
 	}
 	return ot.tracer.Start(ctx, name, opts...)
 }
 
-func (ot *Jaeger) Shutdown(ctx context.Context) error {
+func (ot *Tracer) Shutdown(ctx context.Context) error {
 	return ot.provider.Shutdown(ctx)
 }
 
-func createJaegerTraceProvider(ctx context.Context, serviceName string) (*tracesdk.TracerProvider, error) {
+func createTraceProvider(ctx context.Context, serviceName string) (*tracesdk.TracerProvider, error) {
 	res, err := resource.New(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Configure Jaeger exporter
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(
-		jaeger.WithEndpoint("http://localhost:14268/api/traces"),
-	))
+	// Configure OTLP HTTP exporter
+	exporter, err := otlptracehttp.New(ctx,
+		otlptracehttp.WithEndpoint("localhost:4318"),
+		otlptracehttp.WithInsecure(),
+	)
 	if err != nil {
-		log.Fatalf("Failed to create Jaeger exporter: %v", err)
+		log.Fatalf("Failed to create OTLP HTTP exporter: %v", err)
 	}
 
 	// Configure trace provider

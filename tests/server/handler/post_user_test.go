@@ -31,8 +31,24 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	defer container.Terminate(ctx)
-	defer db.Close()
+	defer func() {
+		err = container.Terminate(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err = db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err = otel.Shutdown(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	r := router.InitRoutes(otel)
 
@@ -52,7 +68,10 @@ func TestPostUser_Integration(t *testing.T) {
     }`
 	resp, err := http.Post(server.URL+"/v1/users", "application/json", bytes.NewBufferString(reqBody))
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+		require.NoError(t, err)
+	}()
 
 	// Check the status code
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)

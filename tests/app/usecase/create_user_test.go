@@ -26,9 +26,9 @@ func TestCreateCommonUser_Integration_Success(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
-	defer otel.Shutdown(ctx)
+	defer func() { assert.NoError(t, container.Terminate(ctx)) }()
+	defer func() { assert.NoError(t, db.Close()) }()
+	defer func() { assert.NoError(t, otel.Shutdown(ctx)) }()
 
 	userRepo := repository.NewUserRepository(db, otel)
 
@@ -73,9 +73,9 @@ func TestCreateMerchantUser_Integration_Success(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
-	defer otel.Shutdown(ctx)
+	defer func() { assert.NoError(t, container.Terminate(ctx)) }()
+	defer func() { assert.NoError(t, db.Close()) }()
+	defer func() { assert.NoError(t, otel.Shutdown(ctx)) }()
 
 	userRepo := repository.NewUserRepository(db, otel)
 
@@ -120,9 +120,9 @@ func TestCreateUser_ShouldFailIfEmailIsAlreadyRegistered(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
-	defer otel.Shutdown(ctx)
+	defer func() { assert.NoError(t, container.Terminate(ctx)) }()
+	defer func() { assert.NoError(t, db.Close()) }()
+	defer func() { assert.NoError(t, otel.Shutdown(ctx)) }()
 
 	userRepo := repository.NewUserRepository(db, otel)
 
@@ -138,7 +138,8 @@ func TestCreateUser_ShouldFailIfEmailIsAlreadyRegistered(t *testing.T) {
 	}
 
 	// Act
-	createUserUseCase.Execute(ctx, input)
+	_, err = createUserUseCase.Execute(ctx, input)
+	assert.NoError(t, err)
 	userID, err := createUserUseCase.Execute(ctx, input)
 
 	// Assert
@@ -156,9 +157,9 @@ func TestCreateUser_ShouldFailIfCPFIsAlreadyRegistered(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
-	defer otel.Shutdown(ctx)
+	defer func() { assert.NoError(t, container.Terminate(ctx)) }()
+	defer func() { assert.NoError(t, db.Close()) }()
+	defer func() { assert.NoError(t, otel.Shutdown(ctx)) }()
 
 	userRepo := repository.NewUserRepository(db, otel)
 
@@ -174,7 +175,8 @@ func TestCreateUser_ShouldFailIfCPFIsAlreadyRegistered(t *testing.T) {
 	}
 
 	// Act
-	createUserUseCase.Execute(ctx, input)
+	_, err = createUserUseCase.Execute(ctx, input)
+	assert.NoError(t, err)
 	userID, err := createUserUseCase.Execute(ctx, usecase.CreateUserInput{
 		Name:     "Jane Doe",
 		Email:    "jane@example.com",
@@ -198,9 +200,9 @@ func TestCreateUser_ShouldFailIfCNPJIsAlreadyRegistered(t *testing.T) {
 	require.NoError(t, err)
 	otel, err := telemetry.NewJaeger(context.Background(), "")
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
-	defer otel.Shutdown(ctx)
+	defer func() { assert.NoError(t, container.Terminate(ctx)) }()
+	defer func() { assert.NoError(t, db.Close()) }()
+	defer func() { assert.NoError(t, otel.Shutdown(ctx)) }()
 
 	userRepo := repository.NewUserRepository(db, otel)
 
@@ -216,7 +218,8 @@ func TestCreateUser_ShouldFailIfCNPJIsAlreadyRegistered(t *testing.T) {
 	}
 
 	// Act
-	createUserUseCase.Execute(ctx, input)
+	_, err = createUserUseCase.Execute(ctx, input)
+	assert.NoError(t, err)
 	userID, err := createUserUseCase.Execute(ctx, usecase.CreateUserInput{
 		Name:     "Jane Doe",
 		Email:    "jane@example.com",

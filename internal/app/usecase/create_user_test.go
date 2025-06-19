@@ -124,6 +124,6 @@ func (m *mockCreateUserStrategy) UserType() string {
 }
 
 func (m *mockUserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
-	m.Mock.Called(ctx, email)
+	m.Called(ctx, email)
 	return m.Called(ctx, email).Get(0).(bool), m.Called(ctx, email).Error(1)
 }

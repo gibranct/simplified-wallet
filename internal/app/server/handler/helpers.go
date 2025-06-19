@@ -7,28 +7,10 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type envelope map[string]any
-
-func (h *handler) readIDParam(r *http.Request) (int64, error) {
-	idParam := ""
-	if chi, ok := r.Context().Value(chi.RouteCtxKey).(*chi.Context); ok {
-		idParam = chi.URLParam("id")
-	}
-
-	id, err := strconv.ParseInt(idParam, 10, 64)
-
-	if err != nil || id < 1 {
-		return 0, errors.New("invalid id parameter")
-	}
-
-	return id, nil
-}
 
 func (h *handler) writeJson(w http.ResponseWriter, status int, data any, headers http.Header) error {
 
@@ -45,9 +27,9 @@ func (h *handler) writeJson(w http.ResponseWriter, status int, data any, headers
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(js)
+	_, err = w.Write(js)
 
-	return nil
+	return err
 }
 
 func (h *handler) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {

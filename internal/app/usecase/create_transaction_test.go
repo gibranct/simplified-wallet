@@ -482,9 +482,10 @@ func (m *mockTransactionAuthorizerGateway) IsTransactionAllowed(ctx context.Cont
 func NewUser(userType string) *entity.User {
 	var cpf, cnpj string
 
-	if userType == vo.CommonUserType {
+	switch userType {
+	case vo.CommonUserType:
 		cpf = "12345678901"
-	} else if userType == vo.MerchantUserType {
+	case vo.MerchantUserType:
 		cnpj = "47775767000156"
 	}
 

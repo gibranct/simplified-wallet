@@ -68,11 +68,14 @@ func (ur UserRepository) ExistsByCNPJ(ctx context.Context, cnpj string) (bool, e
 func (ur UserRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
 	var user model.UserModel
 	query := "SELECT " + strings.Join(allUserColumns, ", ") + " FROM users WHERE id = $1"
-	ur.db.GetContext(
+	err := ur.db.GetContext(
 		ctx,
 		&user,
 		query, userID,
 	)
+	if err != nil {
+		return nil, err
+	}
 	return user.ToEntity()
 }
 

@@ -24,7 +24,7 @@ func Run() {
 		if err := otel.Shutdown(context.Background()); err != nil {
 			log.Printf("Error shutting down tracer provider: %v", err)
 		}
-		log.Println("Jaeger tracer provider shut down")
+		log.Println("OTLP tracer provider shut down")
 	}()
 
 	dbConfig := config.GetPostgresConfig()

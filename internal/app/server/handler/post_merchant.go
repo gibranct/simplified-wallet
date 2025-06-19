@@ -22,7 +22,10 @@ func (h handler) PostMerchant(w http.ResponseWriter, r *http.Request) {
 
 	err := h.readJSON(w, r, &input)
 	if err != nil {
-		h.writeJson(w, http.StatusBadRequest, envelope{"error": err.Error()}, nil)
+		err = h.writeJson(w, http.StatusBadRequest, envelope{"error": err.Error()}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
@@ -35,13 +38,19 @@ func (h handler) PostMerchant(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		h.writeJson(w, http.StatusUnprocessableEntity, envelope{"error": err.Error()}, nil)
+		err = h.writeJson(w, http.StatusUnprocessableEntity, envelope{"error": err.Error()}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
 	err = h.writeJson(w, http.StatusCreated, envelope{"user_id": userID}, nil)
 	if err != nil {
-		h.writeJson(w, http.StatusInternalServerError, envelope{"error": "failed to write response"}, nil)
+		err = h.writeJson(w, http.StatusInternalServerError, envelope{"error": "failed to write response"}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 }

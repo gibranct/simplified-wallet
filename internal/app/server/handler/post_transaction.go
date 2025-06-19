@@ -23,19 +23,28 @@ func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 
 	err := h.readJSON(w, r, &input)
 	if err != nil {
-		h.writeJson(w, http.StatusBadRequest, envelope{"error": err.Error()}, nil)
+		err = h.writeJson(w, http.StatusBadRequest, envelope{"error": err.Error()}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
 	senderID, err := uuid.Parse(input.SenderID)
 	if err != nil {
-		h.writeJson(w, http.StatusBadRequest, envelope{"error": "invalid sender_id"}, nil)
+		err = h.writeJson(w, http.StatusBadRequest, envelope{"error": "invalid sender_id"}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
 	receiverID, err := uuid.Parse(input.ReceiverID)
 	if err != nil {
-		h.writeJson(w, http.StatusBadRequest, envelope{"error": "invalid receiver_id"}, nil)
+		err = h.writeJson(w, http.StatusBadRequest, envelope{"error": "invalid receiver_id"}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
@@ -46,11 +55,20 @@ func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		h.writeJson(w, http.StatusUnprocessableEntity, envelope{"error": err.Error()}, nil)
+		err = h.writeJson(w, http.StatusUnprocessableEntity, envelope{"error": err.Error()}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
-	h.writeJson(w, http.StatusCreated, envelope{"transaction_id": transactionID}, nil)
+	err = h.writeJson(w, http.StatusCreated, envelope{"transaction_id": transactionID}, nil)
+	if err != nil {
+		err = h.writeJson(w, http.StatusInternalServerError, envelope{"error": "failed to write response"}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
+	}
 
 	// After successful transaction creation:
 	metrics.TransactionCounter.Inc()
@@ -62,6 +80,4 @@ func (h handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 		attribute.String("transaction.sender_id", input.SenderID),
 		attribute.String("transaction.receiver_id", input.ReceiverID),
 	)
-
-	return
 }
