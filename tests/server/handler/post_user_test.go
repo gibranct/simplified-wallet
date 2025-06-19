@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -26,10 +27,14 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	if err != nil {
+		panic(err)
+	}
 	defer container.Terminate(ctx)
 	defer db.Close()
 
-	r := router.InitRoutes()
+	r := router.InitRoutes(otel)
 
 	server = httptest.NewServer(r)
 	defer server.Close()

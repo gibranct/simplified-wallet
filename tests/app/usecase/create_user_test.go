@@ -3,6 +3,8 @@ package usecase_test
 import (
 	"context"
 	"database/sql"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
+	"log"
 	"testing"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
@@ -22,13 +24,16 @@ func TestCreateCommonUser_Integration_Success(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
+	defer otel.Shutdown(ctx)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 
 	// Create use case
-	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo))
+	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo), otel)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -66,13 +71,16 @@ func TestCreateMerchantUser_Integration_Success(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
+	defer otel.Shutdown(ctx)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 
 	// Create use case
-	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo))
+	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo), otel)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -110,13 +118,16 @@ func TestCreateUser_ShouldFailIfEmailIsAlreadyRegistered(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
+	defer otel.Shutdown(ctx)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 
 	// Create use case
-	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo))
+	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo), otel)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -143,13 +154,16 @@ func TestCreateUser_ShouldFailIfCPFIsAlreadyRegistered(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
+	defer otel.Shutdown(ctx)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 
 	// Create use case
-	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo))
+	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo), otel)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -182,13 +196,16 @@ func TestCreateUser_ShouldFailIfCNPJIsAlreadyRegistered(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
 	defer container.Terminate(ctx)
 	defer db.Close()
+	defer otel.Shutdown(ctx)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 
 	// Create use case
-	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo))
+	createUserUseCase := usecase.NewCreateUser(userRepo, strategies(userRepo), otel)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -215,8 +232,12 @@ func TestCreateUser_ShouldFailIfCNPJIsAlreadyRegistered(t *testing.T) {
 }
 
 func strategies(userRepo repository.UserRepository) []usecase.CreateUserStrategy {
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	if err != nil {
+		log.Fatal(err)
+	}
 	return []usecase.CreateUserStrategy{
-		strategy.NewCreateCommonUser(userRepo),
-		strategy.NewCreateMerchantUser(userRepo),
+		strategy.NewCreateCommonUser(userRepo, otel),
+		strategy.NewCreateMerchantUser(userRepo, otel),
 	}
 }
