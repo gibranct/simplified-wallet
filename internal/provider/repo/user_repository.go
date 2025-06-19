@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"log"
 	"strings"
 
@@ -13,7 +14,8 @@ import (
 )
 
 type UserRepository struct {
-	db *sqlx.DB
+	db   *sqlx.DB
+	otel telemetry.Telemetry
 }
 
 var allUserColumns = []string{
@@ -66,11 +68,14 @@ func (ur UserRepository) ExistsByCNPJ(ctx context.Context, cnpj string) (bool, e
 func (ur UserRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
 	var user model.UserModel
 	query := "SELECT " + strings.Join(allUserColumns, ", ") + " FROM users WHERE id = $1"
-	ur.db.GetContext(
+	err := ur.db.GetContext(
 		ctx,
 		&user,
 		query, userID,
 	)
+	if err != nil {
+		return nil, err
+	}
 	return user.ToEntity()
 }
 
@@ -151,6 +156,6 @@ func (ur UserRepository) UpdateBalance(ctx context.Context, senderID, receiverID
 	})
 }
 
-func NewUserRepository(db *sqlx.DB) UserRepository {
-	return UserRepository{db: db}
+func NewUserRepository(db *sqlx.DB, otel telemetry.Telemetry) UserRepository {
+	return UserRepository{db: db, otel: otel}
 }

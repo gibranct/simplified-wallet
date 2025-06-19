@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase/strategy"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
@@ -19,6 +20,7 @@ type CreateUserStrategy interface {
 type CreateUser struct {
 	userRepository CreateUserRepository
 	strategies     []CreateUserStrategy
+	otel           telemetry.Telemetry
 }
 
 type CreateUserInput struct {
@@ -30,6 +32,9 @@ type CreateUserInput struct {
 }
 
 func (cus *CreateUser) Execute(ctx context.Context, input CreateUserInput) (string, error) {
+	ctx, span := cus.otel.Start(ctx, "CreateUser")
+	defer span.End()
+
 	exists, err := cus.userRepository.ExistsByEmail(ctx, input.Email)
 	if err != nil {
 		return "", err
@@ -58,9 +63,14 @@ func (cus *CreateUser) Execute(ctx context.Context, input CreateUserInput) (stri
 	return userID, nil
 }
 
-func NewCreateUser(userRepository CreateUserRepository, strategies []CreateUserStrategy) *CreateUser {
+func NewCreateUser(
+	userRepository CreateUserRepository,
+	strategies []CreateUserStrategy,
+	otel telemetry.Telemetry,
+) *CreateUser {
 	return &CreateUser{
 		userRepository: userRepository,
 		strategies:     strategies,
+		otel:           otel,
 	}
 }

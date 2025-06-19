@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"encoding/json"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,16 +18,16 @@ import (
 func TestPostMerchant_EmptyRequestBody_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createUserMock := &CreateUserMock{}
-	handler := handler.New(nil, createUserMock)
+	h := handler.New(nil, createUserMock, telemetry.NewMockTelemetry())
 
-	// Create a mock HTTP request with empty body
+	// Create a mock HTTP request with an empty body
 	r, _ := http.NewRequest("POST", "/v1/merchants", strings.NewReader(""))
 
 	// Create a response recorder to record the HTTP response
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostMerchant(w, r)
+	h.PostMerchant(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -43,7 +44,7 @@ func TestPostMerchant_EmptyRequestBody_ShouldReturn400(t *testing.T) {
 func TestPostMerchant_CreateUserUseCaseSuccess_ShouldReturn201Created(t *testing.T) {
 	// Arrange
 	createUserMock := &CreateUserMock{}
-	handler := handler.New(nil, createUserMock)
+	h := handler.New(nil, createUserMock, telemetry.NewMockTelemetry())
 
 	// Create a mock HTTP request with valid input
 	reader := strings.NewReader(`{"name": "John Doe", "email": "johndoe@example.com", "password": "password123", "cnpj": "47775767000156"}`)
@@ -67,7 +68,7 @@ func TestPostMerchant_CreateUserUseCaseSuccess_ShouldReturn201Created(t *testing
 	).Return(expectedUserID, nil)
 
 	// Act
-	handler.PostMerchant(w, r)
+	h.PostMerchant(w, r)
 
 	// Assert
 	resp := w.Result()

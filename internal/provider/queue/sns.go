@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"github.com/google/uuid"
 	"log"
 	"os"
@@ -23,11 +24,12 @@ type SNSClient interface {
 type SNS struct {
 	client   SNSClient
 	topicARN string
+	otel     telemetry.Telemetry
 }
 
 // NewSNSWithClient creates a new SNS instance with a provided client
 // This is primarily used for testing
-func NewSNSWithClient(client SNSClient) *SNS {
+func NewSNSWithClient(client SNSClient, otel telemetry.Telemetry) *SNS {
 	// Default topic ARN for localstack (FIFO)
 	topicARN := "arn:aws:sns:us-east-1:000000000000:transaction-events.fifo"
 	if os.Getenv("SNS_TOPIC_ARN") != "" {
@@ -37,10 +39,11 @@ func NewSNSWithClient(client SNSClient) *SNS {
 	return &SNS{
 		client:   client,
 		topicARN: topicARN,
+		otel:     otel,
 	}
 }
 
-func NewSNS() *SNS {
+func NewSNS(otel telemetry.Telemetry) *SNS {
 	// Default to localstack configuration
 	endpoint := "http://localhost:4566"
 	if os.Getenv("AWS_ENDPOINT") != "" {
@@ -90,10 +93,14 @@ func NewSNS() *SNS {
 	return &SNS{
 		client:   client,
 		topicARN: topicARN,
+		otel:     otel,
 	}
 }
 
 func (s *SNS) Send(ctx context.Context, message []byte) error {
+	ctx, span := s.otel.Start(ctx, "SQS")
+	defer span.End()
+
 	// Log the message for debugging
 	log.Printf("Sending message to SNS topic %s: %s", s.topicARN, string(message))
 

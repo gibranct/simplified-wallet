@@ -20,7 +20,10 @@ func TestPostMerchant_Integration(t *testing.T) {
     }`
 	resp, err := http.Post(server.URL+"/v1/merchants", "application/json", bytes.NewBufferString(reqBody))
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+		require.NoError(t, err)
+	}()
 
 	// Check the status code
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)

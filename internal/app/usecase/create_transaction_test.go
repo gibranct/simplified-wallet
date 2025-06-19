@@ -9,6 +9,7 @@ import (
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/vo"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -21,6 +22,7 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenTransactionIsNotAllowedB
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -29,7 +31,7 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenTransactionIsNotAllowedB
 	// Setup mock to deny transaction authorization
 	mockAuthorizer.On("IsTransactionAllowed", ctx).Return(false)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -53,6 +55,7 @@ func TestCreateTransaction_Execute_ShouldSuccessfullyUpdateBalanceAndCreateTrans
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -80,7 +83,7 @@ func TestCreateTransaction_Execute_ShouldSuccessfullyUpdateBalanceAndCreateTrans
 		Return(nil)
 	mockQueue.On("Send", ctx, mock.AnythingOfType("[]uint8")).Return(nil)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -105,6 +108,7 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderIsAMerchant(t *tes
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -129,7 +133,7 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderIsAMerchant(t *tes
 		}).
 		Return(errs.ErrMerchantCannotSendMoney)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -153,6 +157,7 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderHasInsufficientFun
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -176,7 +181,7 @@ func TestCreateTransaction_Execute_ShouldReturnErrorWhenSenderHasInsufficientFun
 		}).
 		Return(errs.ErrNotEnoughMoney)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -200,6 +205,7 @@ func TestCreateTransaction_Execute_ShouldCreateTransactionWithCorrectAmountAndID
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	amount := 150.0
 
@@ -226,7 +232,7 @@ func TestCreateTransaction_Execute_ShouldCreateTransactionWithCorrectAmountAndID
 		Return(nil)
 	mockQueue.On("Send", ctx, mock.AnythingOfType("[]uint8")).Return(nil)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -254,6 +260,7 @@ func TestCreateTransaction_Execute_ShouldIncreaseReceiverBalanceByCorrectAmount(
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -291,7 +298,7 @@ func TestCreateTransaction_Execute_ShouldIncreaseReceiverBalanceByCorrectAmount(
 		Return(nil)
 	mockQueue.On("Send", ctx, mock.AnythingOfType("[]uint8")).Return(nil)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -317,6 +324,7 @@ func TestCreateTransaction_Execute_ShouldVerifySenderBalanceIsDecreasedByCorrect
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -341,7 +349,7 @@ func TestCreateTransaction_Execute_ShouldVerifySenderBalanceIsDecreasedByCorrect
 		Return(nil)
 	mockQueue.On("Send", ctx, mock.AnythingOfType("[]uint8")).Return(nil)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -365,6 +373,7 @@ func TestCreateTransaction_Execute_ShouldHandleTransactionWithZeroAmount(t *test
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -390,7 +399,7 @@ func TestCreateTransaction_Execute_ShouldHandleTransactionWithZeroAmount(t *test
 		Return(nil)
 	mockQueue.On("Send", ctx, mock.AnythingOfType("[]uint8")).Return(nil)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -417,6 +426,7 @@ func TestCreateTransaction_Execute_ShouldPropagateErrorsFromRepositoryLayer(t *t
 	mockUserRepo := &mockUserRepository{}
 	mockAuthorizer := &mockTransactionAuthorizerGateway{}
 	mockQueue := &mockQueue{}
+	mockTelemetry := telemetry.NewMockTelemetry()
 
 	senderID := uuid.New()
 	receiverID := uuid.New()
@@ -428,7 +438,7 @@ func TestCreateTransaction_Execute_ShouldPropagateErrorsFromRepositoryLayer(t *t
 	mockUserRepo.On("UpdateBalance", ctx, senderID.String(), receiverID.String(), mock.AnythingOfType("func(*entity.User, *entity.User) (*entity.Transaction, error)")).
 		Return(expectedError)
 
-	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue)
+	useCase := usecase.NewCreateTransaction(mockUserRepo, mockAuthorizer, mockQueue, mockTelemetry)
 
 	input := usecase.CreateTransactionInput{
 		Amount:     amount,
@@ -472,9 +482,10 @@ func (m *mockTransactionAuthorizerGateway) IsTransactionAllowed(ctx context.Cont
 func NewUser(userType string) *entity.User {
 	var cpf, cnpj string
 
-	if userType == vo.CommonUserType {
+	switch userType {
+	case vo.CommonUserType:
 		cpf = "12345678901"
-	} else if userType == vo.MerchantUserType {
+	case vo.MerchantUserType:
 		cnpj = "47775767000156"
 	}
 

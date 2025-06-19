@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
+	"log"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
 )
@@ -9,6 +11,8 @@ import (
 type handler struct {
 	createTransaction ICreateTransaction
 	createUser        ICreateUser
+	otel              telemetry.Telemetry
+	logger            *log.Logger
 }
 
 type ICreateTransaction interface {
@@ -22,9 +26,12 @@ type ICreateUser interface {
 func New(
 	createTransaction ICreateTransaction,
 	createUser ICreateUser,
+	telemetry telemetry.Telemetry,
 ) *handler {
 	return &handler{
 		createTransaction: createTransaction,
 		createUser:        createUser,
+		otel:              telemetry,
+		logger:            log.New(log.Writer(), "handler: ", log.LstdFlags),
 	}
 }

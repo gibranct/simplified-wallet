@@ -15,15 +15,21 @@ type PostUserRequest struct {
 }
 
 func (h handler) PostUser(w http.ResponseWriter, r *http.Request) {
+	ctx, span := h.otel.Start(r.Context(), "PostUser")
+	defer span.End()
+
 	var input PostUserRequest
 
 	err := h.readJSON(w, r, &input)
 	if err != nil {
-		h.writeJson(w, http.StatusBadRequest, envelope{"error": err.Error()}, nil)
+		err = h.writeJson(w, http.StatusBadRequest, envelope{"error": err.Error()}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
-	userID, err := h.createUser.Execute(r.Context(), usecase.CreateUserInput{
+	userID, err := h.createUser.Execute(ctx, usecase.CreateUserInput{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
@@ -32,13 +38,19 @@ func (h handler) PostUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		h.writeJson(w, http.StatusUnprocessableEntity, envelope{"error": err.Error()}, nil)
+		err = h.writeJson(w, http.StatusUnprocessableEntity, envelope{"error": err.Error()}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 
 	err = h.writeJson(w, http.StatusCreated, envelope{"user_id": userID}, nil)
 	if err != nil {
-		h.writeJson(w, http.StatusInternalServerError, envelope{"error": "failed to write response"}, nil)
+		err = h.writeJson(w, http.StatusInternalServerError, envelope{"error": "failed to write response"}, nil)
+		if err != nil {
+			h.logger.Println(err)
+		}
 		return
 	}
 }

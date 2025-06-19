@@ -3,6 +3,7 @@ package usecase_test
 import (
 	"context"
 	"fmt"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"log"
 	"testing"
 
@@ -64,8 +65,26 @@ func TestCreateTransaction_Integration_Success(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, migrateVersion)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
+	defer func() {
+		err := container.Terminate(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := otel.Shutdown(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
 	cpf := "86395839004"
 	cnpj := "71627571000107"
 
@@ -76,12 +95,12 @@ func TestCreateTransaction_Integration_Success(t *testing.T) {
 	receiverID, err := createTestUser(ctx, db, "receiver", "merchant", cnpj, 0.0)
 	require.NoError(t, err)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 	authorizerGateway := NewMockTransactionAuthorizerGateway(true) // Always authorize
 	snsService := NewMockQueue()
 
 	// Create use case
-	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway, snsService)
+	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway, snsService, otel)
 
 	// Execute transaction
 	amount := 400.0
@@ -121,8 +140,26 @@ func TestCreateTransaction_Integration_Rollback(t *testing.T) {
 	// Setup
 	container, db, err := test.SetupTestDatabase(ctx, usersTableVersion)
 	require.NoError(t, err)
-	defer container.Terminate(ctx)
-	defer db.Close()
+	otel, err := telemetry.NewJaeger(context.Background(), "")
+	require.NoError(t, err)
+	defer func() {
+		err := container.Terminate(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := otel.Shutdown(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}()
 	cpf := "86395839004"
 	cnpj := "71627571000107"
 
@@ -133,13 +170,13 @@ func TestCreateTransaction_Integration_Rollback(t *testing.T) {
 	receiverID, err := createTestUser(ctx, db, "receiver_rollback", "merchant", cnpj, 0.0)
 	require.NoError(t, err)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(db, otel)
 
 	authorizerGateway := NewMockTransactionAuthorizerGateway(true) // Always authorize
 	snsService := NewMockQueue()
 
 	// Create use case with the failing repository
-	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway, snsService)
+	createTransactionUseCase := usecase.NewCreateTransaction(userRepo, authorizerGateway, snsService, otel)
 
 	// Get initial balances
 	initialSenderBalance, err := getBalance(ctx, db, senderID)

@@ -1,4 +1,21 @@
 services:
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - postgres
+#      - localstack
+#      - prometheus
+#      - jaeger
+#    environment:
+#      - POSTGRES_URI=postgres://postgres:postgres@postgres:5432/wallet
+#      - POSTGRES_SSLMODE=false
+#      - AWS_ENDPOINT=http://localstack:4566
+#    restart: always
+
   postgres:
     image: postgres:17-alpine
     environment:
@@ -31,6 +48,31 @@ services:
       timeout: 5s
       retries: 3
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: always
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # UI port
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    restart: always
+
 volumes:
   postgres_data:
   localstack_data:
+  prometheus_data:

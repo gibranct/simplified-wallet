@@ -1,6 +1,7 @@
 package entity_test
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
@@ -139,7 +140,8 @@ func TestUser_Deposit_ShouldCorrectlyUpdateBalanceWithPositiveAmount(t *testing.
 	assert.Equal(t, int64(0), user.Balance())
 
 	// Act
-	user.Deposit(depositAmount)
+	err = user.Deposit(depositAmount)
+	require.NoError(t, err)
 
 	// Assert
 	assert.Equal(t, int64(initialBalance+depositAmount)*100, user.Balance())
@@ -160,7 +162,8 @@ func TestUser_Deposit_ShouldNotChangeBalanceWithZeroAmount(t *testing.T) {
 	assert.Equal(t, int64(0), user.Balance())
 
 	// Act
-	user.Deposit(depositAmount)
+	err = user.Deposit(depositAmount)
+	require.NoError(t, err)
 
 	// Assert
 	assert.Equal(t, int64(0), user.Balance())
@@ -182,9 +185,10 @@ func TestUser_Deposit_ShouldNotChangeBalanceWithNegativeAmount(t *testing.T) {
 	assert.Equal(t, int64(0), user.Balance())
 
 	// Act
-	user.Deposit(depositAmount)
+	err = user.Deposit(depositAmount)
 
 	// Assert
+	require.Error(t, err)
 	assert.Equal(t, int64(initialBalance*100), user.Balance())
 }
 
@@ -202,7 +206,8 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountIsPositiveAndLessThan
 	assert.NoError(t, err)
 
 	// Set initial balance with deposit
-	user.Deposit(initialBalance)
+	err = user.Deposit(initialBalance)
+	assert.NoError(t, err)
 	assert.Equal(t, int64(initialBalance*100), user.Balance())
 
 	withdrawAmount := 50.0
@@ -229,7 +234,8 @@ func TestUser_Withdraw_ShouldSuccessfullyWithdrawWhenAmountEqualsEntireBalance(t
 	assert.NoError(t, err)
 
 	// Set initial balance with deposit
-	user.Deposit(initialBalance)
+	err = user.Deposit(initialBalance)
+	assert.NoError(t, err)
 	assert.Equal(t, int64(initialBalance*100), user.Balance())
 
 	withdrawAmount := 100.0 // Withdrawing the entire balance
@@ -256,7 +262,8 @@ func TestUser_Withdraw_ShouldReturnFalseWhenTryingToWithdrawMoreThanAvailableBal
 	assert.NoError(t, err)
 
 	// Set initial balance with deposit
-	user.Deposit(initialBalance)
+	err = user.Deposit(initialBalance)
+	assert.NoError(t, err)
 	assert.Equal(t, int64(initialBalance*100), user.Balance())
 
 	withdrawAmount := 100.0 // Attempting to withdraw more than available

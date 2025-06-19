@@ -2,6 +2,7 @@ package usecase_test
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"testing"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
@@ -19,7 +20,8 @@ func TestCreateUser_Execute_ShouldReturnErrorWhenEmailAlreadyExists(t *testing.T
 
 	mockRepo.On("ExistsByEmail", ctx, mock.AnythingOfType("string")).Return(true, nil)
 
-	createUser := usecase.NewCreateUser(mockRepo, []usecase.CreateUserStrategy{mockStrategy})
+	mockTelemetry := telemetry.NewMockTelemetry()
+	createUser := usecase.NewCreateUser(mockRepo, []usecase.CreateUserStrategy{mockStrategy}, mockTelemetry)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -48,7 +50,8 @@ func TestCreateUser_Execute_ShouldReturnErrUserTypeNotFoundWhenNoMatchingStrateg
 	mockRepo.On("ExistsByEmail", ctx, mock.AnythingOfType("string")).Return(false, nil)
 	mockStrategy.On("UserType").Return("invalid_type")
 
-	createUser := usecase.NewCreateUser(mockRepo, []usecase.CreateUserStrategy{mockStrategy})
+	mockTelemetry := telemetry.NewMockTelemetry()
+	createUser := usecase.NewCreateUser(mockRepo, []usecase.CreateUserStrategy{mockStrategy}, mockTelemetry)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -80,7 +83,8 @@ func TestCreateUser_Execute_ShouldExecuteCorrectStrategyWhenMatchingUserTypeIsFo
 	mockMerchantStrategy.On("UserType").Return("merchant")
 	mockMerchantStrategy.On("Execute", ctx, mock.AnythingOfType("strategy.CreateUserStrategyInput")).Return("user-123", nil)
 
-	createUser := usecase.NewCreateUser(mockRepo, []usecase.CreateUserStrategy{mockCommonStrategy, mockMerchantStrategy})
+	mockTelemetry := telemetry.NewMockTelemetry()
+	createUser := usecase.NewCreateUser(mockRepo, []usecase.CreateUserStrategy{mockCommonStrategy, mockMerchantStrategy}, mockTelemetry)
 
 	input := usecase.CreateUserInput{
 		Name:     "John Doe",
@@ -120,6 +124,6 @@ func (m *mockCreateUserStrategy) UserType() string {
 }
 
 func (m *mockUserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
-	m.Mock.Called(ctx, email)
+	m.Called(ctx, email)
 	return m.Called(ctx, email).Get(0).(bool), m.Called(ctx, email).Error(1)
 }
