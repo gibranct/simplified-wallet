@@ -29,7 +29,7 @@ type SNS struct {
 
 // NewSNSWithClient creates a new SNS instance with a provided client
 // This is primarily used for testing
-func NewSNSWithClient(client SNSClient) *SNS {
+func NewSNSWithClient(client SNSClient, otel telemetry.Telemetry) *SNS {
 	// Default topic ARN for localstack (FIFO)
 	topicARN := "arn:aws:sns:us-east-1:000000000000:transaction-events.fifo"
 	if os.Getenv("SNS_TOPIC_ARN") != "" {
@@ -39,6 +39,7 @@ func NewSNSWithClient(client SNSClient) *SNS {
 	return &SNS{
 		client:   client,
 		topicARN: topicARN,
+		otel:     otel,
 	}
 }
 

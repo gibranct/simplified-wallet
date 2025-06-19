@@ -1,11 +1,9 @@
 package router
 
 import (
-	"context"
 	"github.com.br/gibranct/simplified-wallet/internal/provider/queue"
 	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"log"
 	"net/http"
 	"time"
 
@@ -20,9 +18,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-const serviceName = "simplified-wallet"
-
-func InitRoutes() *chi.Mux {
+func InitRoutes(otel telemetry.Telemetry) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Standard middleware
@@ -33,20 +29,10 @@ func InitRoutes() *chi.Mux {
 
 	// Add custom middleware for metrics and tracing
 	r.Use(customMiddleware.PrometheusMiddleware)
-	//r.Use(customMiddleware.TracingMiddleware)
+	r.Use(customMiddleware.TracingMiddleware)
 
 	// Expose Prometheus metrics endpoint
 	r.Handle("/metrics", promhttp.Handler())
-
-	otel, err := telemetry.NewJaeger(context.Background(), serviceName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := otel.Shutdown(context.Background()); err != nil {
-			log.Printf("Error shutting down tracer provider: %v", err)
-		}
-	}()
 
 	userRepo := repository.NewUserRepository(db.NewPostgresDB(), otel)
 	createTransaction := usecase.NewCreateTransaction(

@@ -3,6 +3,7 @@ package queue_test
 import (
 	"context"
 	"errors"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"os"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestNewSNS_ShouldUseDefaultValues(t *testing.T) {
 	os.Clearenv()
 
 	// Act
-	snsClient := queue.NewSNS()
+	snsClient := queue.NewSNS(telemetry.NewMockTelemetry())
 
 	// Assert
 	assert.NotNil(t, snsClient, "SNS client should not be nil")
@@ -51,7 +52,7 @@ func TestNewSNS_ShouldUseEnvironmentVariables(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Act
-	snsClient := queue.NewSNS()
+	snsClient := queue.NewSNS(telemetry.NewMockTelemetry())
 
 	// Assert
 	assert.NotNil(t, snsClient, "SNS client should not be nil")
@@ -68,7 +69,7 @@ func TestSNS_Send_ShouldReturnNilWhenPublishSucceeds(t *testing.T) {
 	mockClient.On("Publish", mock.Anything, mock.Anything).Return(mockOutput, nil)
 
 	// Create SNS instance with the mock client
-	snsInstance := queue.NewSNSWithClient(mockClient)
+	snsInstance := queue.NewSNSWithClient(mockClient, telemetry.NewMockTelemetry())
 
 	// Act
 	err := snsInstance.Send(ctx, message)
@@ -89,7 +90,7 @@ func TestSNS_Send_ShouldReturnErrorWhenPublishFails(t *testing.T) {
 	mockClient.On("Publish", mock.Anything, mock.Anything).Return(nil, expectedErr)
 
 	// Create SNS instance with the mock client
-	snsInstance := queue.NewSNSWithClient(mockClient)
+	snsInstance := queue.NewSNSWithClient(mockClient, telemetry.NewMockTelemetry())
 
 	// Act
 	err := snsInstance.Send(ctx, message)

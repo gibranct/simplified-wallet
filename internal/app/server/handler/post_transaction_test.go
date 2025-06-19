@@ -11,6 +11,7 @@ import (
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/server/handler"
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -19,7 +20,8 @@ func TestPostTransaction_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createTransactionMock := &CreateTransactionMock{}
 	createUserMock := &CreateUserMock{}
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a mock HTTP request with invalid JSON
 	reader := strings.NewReader(`{"amount": "not-a-number", "sender_id": "123"}`)
@@ -29,7 +31,7 @@ func TestPostTransaction_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostTransaction(w, r)
+	h.PostTransaction(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -47,7 +49,8 @@ func TestPostTransaction_InvalidSenderID_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createTransactionMock := &CreateTransactionMock{}
 	createUserMock := &CreateUserMock{}
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a mock HTTP request with invalid sender_id
 	reader := strings.NewReader(`{"amount": 100, "sender_id": "invalid-uuid", "receiver_id": "89751234-abcd-1234-efgh-567890123456"}`)
@@ -57,7 +60,7 @@ func TestPostTransaction_InvalidSenderID_ShouldReturn400(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostTransaction(w, r)
+	h.PostTransaction(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -74,7 +77,8 @@ func TestPostTransaction_InvalidReceiverID_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createTransactionMock := &CreateTransactionMock{}
 	createUserMock := &CreateUserMock{}
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a mock HTTP request with invalid receiver_id
 	// uuid
@@ -85,7 +89,7 @@ func TestPostTransaction_InvalidReceiverID_ShouldReturn400(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostTransaction(w, r)
+	h.PostTransaction(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -114,7 +118,8 @@ func TestPostTransaction_WhenUsecaseReturnsError_ShouldReturn422(t *testing.T) {
 		}),
 	).Return("", expectedError)
 
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a request with valid JSON data
 	reqBody := `{
@@ -126,7 +131,7 @@ func TestPostTransaction_WhenUsecaseReturnsError_ShouldReturn422(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostTransaction(w, r)
+	h.PostTransaction(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -153,7 +158,8 @@ func TestPostTransaction_WhenUsecaseSucceeds_ShouldReturn201WithTransactionID(t 
 		mock.Anything,
 	).Return(expectedTransactionID, nil)
 
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a request with valid JSON data
 	reqBody := `{
@@ -165,7 +171,7 @@ func TestPostTransaction_WhenUsecaseSucceeds_ShouldReturn201WithTransactionID(t 
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostTransaction(w, r)
+	h.PostTransaction(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -196,7 +202,8 @@ func TestPostTransaction_NegativeAmount_ShouldReturn422(t *testing.T) {
 		}),
 	).Return("", expectedError)
 
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a request with negative amount
 	reqBody := `{
@@ -208,7 +215,7 @@ func TestPostTransaction_NegativeAmount_ShouldReturn422(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostTransaction(w, r)
+	h.PostTransaction(w, r)
 
 	// Assert
 	resp := w.Result()

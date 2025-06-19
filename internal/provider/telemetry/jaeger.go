@@ -19,8 +19,7 @@ type Jaeger struct {
 
 func NewJaeger(ctx context.Context, serviceName string) (*Jaeger, error) {
 	var tp *tracesdk.TracerProvider
-	var err error
-	tp, err = createJaegerTraceProvider(ctx, serviceName)
+	tp, err := createJaegerTraceProvider(ctx, serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +34,9 @@ func NewJaeger(ctx context.Context, serviceName string) (*Jaeger, error) {
 }
 
 func (ot *Jaeger) Start(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, Span) {
+	if len(opts) == 0 {
+		return ot.tracer.Start(ctx, name)
+	}
 	return ot.tracer.Start(ctx, name, opts...)
 }
 

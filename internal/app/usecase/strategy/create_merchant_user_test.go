@@ -2,6 +2,7 @@ package strategy_test
 
 import (
 	"context"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"testing"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase/strategy"
@@ -19,7 +20,7 @@ func TestCreateMerchantUser_Execute_ShouldReturnErrorWhenCNPJAlreadyExists(t *te
 
 	mockRepo.On("ExistsByCNPJ", ctx, mock.AnythingOfType("string")).Return(true, nil)
 
-	createMerchantUser := strategy.NewCreateMerchantUser(mockRepo)
+	createMerchantUser := strategy.NewCreateMerchantUser(mockRepo, telemetry.NewMockTelemetry())
 
 	input := strategy.CreateUserStrategyInput{
 		Name:     "Merchant Inc.",
@@ -46,7 +47,7 @@ func TestCreateMerchantUser_Execute_ShouldSuccessfullyCreateMerchantUserWhenAllI
 	mockRepo.On("ExistsByCNPJ", ctx, mock.AnythingOfType("string")).Return(false, nil)
 	mockRepo.On("Save", ctx, mock.AnythingOfType("*entity.User")).Return(nil)
 
-	createMerchantUser := strategy.NewCreateMerchantUser(mockRepo)
+	createMerchantUser := strategy.NewCreateMerchantUser(mockRepo, telemetry.NewMockTelemetry())
 
 	input := strategy.CreateUserStrategyInput{
 		Name:     "Acme Corp",

@@ -10,6 +10,7 @@ import (
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/server/handler"
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -18,7 +19,8 @@ func TestPostUser_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 	// Arrange
 	createUserMock := &CreateUserMock{}
 	createTransactionMock := &CreateTransactionMock{}
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a mock HTTP request with invalid JSON
 	reader := strings.NewReader(`{"name": "John Doe", "email": "invalid-json`)
@@ -28,7 +30,7 @@ func TestPostUser_InvalidJSONBody_ShouldReturn400(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostUser(w, r)
+	h.PostUser(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -60,7 +62,8 @@ func TestPostUser_EmailAlreadyRegistered_ShouldReturn422(t *testing.T) {
 		}),
 	).Return("", expectedError)
 
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a request with valid JSON data
 	reqBody := `{
@@ -73,7 +76,7 @@ func TestPostUser_EmailAlreadyRegistered_ShouldReturn422(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostUser(w, r)
+	h.PostUser(w, r)
 
 	// Assert
 	resp := w.Result()
@@ -105,7 +108,8 @@ func TestPostUser_SuccessfulCreation_ShouldReturn201WithUserID(t *testing.T) {
 		}),
 	).Return(expectedUserID, nil)
 
-	handler := handler.New(createTransactionMock, createUserMock)
+	mockTelemetry := telemetry.NewMockTelemetry()
+	h := handler.New(createTransactionMock, createUserMock, mockTelemetry)
 
 	// Create a request with valid JSON data
 	reqBody := `{
@@ -118,7 +122,7 @@ func TestPostUser_SuccessfulCreation_ShouldReturn201WithUserID(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Act
-	handler.PostUser(w, r)
+	h.PostUser(w, r)
 
 	// Assert
 	resp := w.Result()

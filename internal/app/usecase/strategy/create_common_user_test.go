@@ -3,6 +3,7 @@ package strategy_test
 import (
 	"context"
 	"errors"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"testing"
 
 	"github.com.br/gibranct/simplified-wallet/internal/app/usecase/strategy"
@@ -21,7 +22,7 @@ func TestCreateCommonUser_Execute_ShouldReturnErrorWhenExistsByCPFFails(t *testi
 
 	mockRepo.On("ExistsByCPF", ctx, mock.AnythingOfType("string")).Return(false, expectedError)
 
-	createCommonUser := strategy.NewCreateCommonUser(mockRepo)
+	createCommonUser := strategy.NewCreateCommonUser(mockRepo, telemetry.NewMockTelemetry())
 
 	input := strategy.CreateUserStrategyInput{
 		Name:     "John Doe",
@@ -47,7 +48,7 @@ func TestCreateCommonUser_Execute_ShouldReturnErrCPFAlreadyRegisteredWhenUserWit
 
 	mockRepo.On("ExistsByCPF", ctx, mock.AnythingOfType("string")).Return(true, nil)
 
-	createCommonUser := strategy.NewCreateCommonUser(mockRepo)
+	createCommonUser := strategy.NewCreateCommonUser(mockRepo, telemetry.NewMockTelemetry())
 
 	input := strategy.CreateUserStrategyInput{
 		Name:     "John Doe",
@@ -74,7 +75,7 @@ func TestCreateCommonUser_Execute_ShouldReturnUserIDWhenUserIsSuccessfullyCreate
 	mockRepo.On("ExistsByCPF", ctx, mock.AnythingOfType("string")).Return(false, nil)
 	mockRepo.On("Save", ctx, mock.AnythingOfType("*entity.User")).Return(nil)
 
-	createCommonUser := strategy.NewCreateCommonUser(mockRepo)
+	createCommonUser := strategy.NewCreateCommonUser(mockRepo, telemetry.NewMockTelemetry())
 
 	input := strategy.CreateUserStrategyInput{
 		Name:     "Jane Doe",
@@ -104,7 +105,7 @@ func TestCreateCommonUser_Execute_ShouldCreateUserWithCommonUserType(t *testing.
 		assert.Equal(t, vo.CommonUserType, user.Type())
 	})
 
-	createCommonUser := strategy.NewCreateCommonUser(mockRepo)
+	createCommonUser := strategy.NewCreateCommonUser(mockRepo, telemetry.NewMockTelemetry())
 
 	input := strategy.CreateUserStrategyInput{
 		Name:     "John Doe",

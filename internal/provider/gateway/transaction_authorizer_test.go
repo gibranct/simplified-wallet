@@ -3,6 +3,7 @@ package gateway_test
 import (
 	"context"
 	"errors"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"net/http"
 	"testing"
 
@@ -18,7 +19,7 @@ func TestTransactionAuthorizer_IsTransactionAllowed_ShouldReturnFalseWhenHTTPReq
 	cancel()
 
 	mockHttpClient := &http.Client{}
-	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient)
+	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient, telemetry.NewMockTelemetry())
 
 	// Act
 	result := authorizer.IsTransactionAllowed(ctx)
@@ -35,7 +36,7 @@ func TestTransactionAuthorizer_IsTransactionAllowed_ShouldReturnFalseWhenHTTPCli
 	mockHttpClient := &mockHTTPClient{}
 	mockHttpClient.On("Do", mock.Anything).Return(nil, errors.New("connection error"))
 
-	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient)
+	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient, telemetry.NewMockTelemetry())
 
 	// Act
 	result := authorizer.IsTransactionAllowed(ctx)
@@ -57,7 +58,7 @@ func TestTransactionAuthorizer_IsTransactionAllowed_ShouldReturnTrueWhenResponse
 	mockHttpClient := &mockHTTPClient{}
 	mockHttpClient.On("Do", mock.Anything).Return(mockResp, nil)
 
-	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient)
+	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient, telemetry.NewMockTelemetry())
 
 	// Act
 	result := authorizer.IsTransactionAllowed(ctx)
@@ -79,7 +80,7 @@ func TestTransactionAuthorizer_IsTransactionAllowed_ShouldReturnFalseWhenRespons
 	mockHttpClient := &mockHTTPClient{}
 	mockHttpClient.On("Do", mock.Anything).Return(mockResp, nil)
 
-	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient)
+	authorizer := gateway.NewTransactionAuthorizer(mockHttpClient, telemetry.NewMockTelemetry())
 
 	// Act
 	result := authorizer.IsTransactionAllowed(ctx)

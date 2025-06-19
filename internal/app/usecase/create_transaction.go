@@ -2,11 +2,10 @@ package usecase
 
 import (
 	"context"
-	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
-
 	"github.com.br/gibranct/simplified-wallet/internal/domain/entity"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/errs"
 	"github.com.br/gibranct/simplified-wallet/internal/domain/event"
+	"github.com.br/gibranct/simplified-wallet/internal/provider/telemetry"
 	"github.com/google/uuid"
 )
 
